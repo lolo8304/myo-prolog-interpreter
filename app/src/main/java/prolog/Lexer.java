@@ -93,19 +93,19 @@ public class Lexer {
             }
             case '[' -> {
                 this.readNext();
-                return new TokenValue(Token.LBRACKET, "[");
+                return new TokenValue(Token.OPEN_ARRAY, "[");
             }
             case ']' -> {
                 this.readNext();
-                return new TokenValue(Token.RBRACKET, "]");
+                return new TokenValue(Token.CLOSE_ARRAY, "]");
             }
             case '(' -> {
                 this.readNext();
-                return new TokenValue(Token.LPARENT, "(");
+                return new TokenValue(Token.OPEN_PARENTHESIS, "(");
             }
             case ')' -> {
                 this.readNext();
-                return new TokenValue(Token.RPARENT, ")");
+                return new TokenValue(Token.CLOSE_PARENTHESIS, ")");
             }
             case '%' -> {
                 var comment = this.readComment(ch);
