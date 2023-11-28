@@ -137,3 +137,60 @@ number(0011112222).
 number(0011112222333333).
 odd_number(X) :- number(X), X mod 2 =:= 1.
 even_number(X) :- number(X), X mod 2 =:= 0.
+
+
+% more complex
+
+member(X, [X|_]).
+member(X, [_|T]) :- member(X, T).
+append([], L, L).
+append([H|T], L, [H|R]) :- append(T, L, R).
+reverse([], []).
+reverse([H|T], R) :- reverse(T, RevT), append(RevT, [H], R).
+findall(X, member(X, [1,2,3,4,5]), L).
+maplist(plus(1), [1, 2, 3], [2, 3, 4]).
+subtract([1,2,3,4,5], [2,4], L).
+select(3, [1,2,3,4], R).
+permutation([1,2,3], P).
+nth0(2, [a,b,c,d], X).
+zip([1,2,3], [a,b,c], Z).
+foldl(plus, [1,2,3,4,5], 0, Sum).
+sort([3,1,4,1,5], S).
+length(L, 5), maplist(=(0), L).
+
+% dont understand. wait
+%setof(X, Y^(member(Y, [1,2,3]), X is Y*Y), S).
+
+bagof(X, member(X, [a,b,c,a]), L).
+once((member(X, [a,b,c]), X = b)).
+forall(member(X, [1,2,3]), X < 4).
+phrase("hello world").
+atomic_list_concat(['Pro', 'log'], X).
+dif(X, Y), X = 1, Y = 2.
+X is max(3, 7).
+numlist(1, 10, L).
+flatten([1, [2, [3, 4]], 5], F).
+nth1(3, [a,b,c,d], X).
+partition(>(3), [1,2,3,4,5], L, G).
+include(>(3), [1,2,3,4,5], G).
+exclude(>(3), [1,2,3,4,5], L).
+sumlist([1,2,3,4,5], Sum).
+msort([3,1,4,1,5], S).
+keysort([1-a,3-c,2-b], K).
+group_by(length, [hello, world, hi, prolog], L, G).
+clique([a-b, b-c, c-d], C).
+acyclic_graph([a-b, b-c, c-a]).
+transitive_closure([a-b, b-c], TC).
+path(a, [a-b, b-c], c).
+sublist([2,3], [1,2,3,4]).
+prefix([1,2], [1,2,3,4]).
+suffix([3,4], [1,2,3,4]).
+sub_atom('hello', 1, 3, _, Sub).
+string_to_list('hello', L).
+string_concat('Hel', 'lo', 'Hello').
+string_length('hello', Len).
+sub_string('hello', 1, 3, _, Sub).
+downcase_atom('Hello', Lower).
+upcase_atom('hello', Upper).
+atom_number('123', N).
+number_chars(123, Chars).

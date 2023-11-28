@@ -335,7 +335,7 @@ public class Lexer {
     }
 
     private Number parseNumber(Character ch) throws IOException {
-        String nextNumberString = this.readAnyChars(ch, "0123456789.+-eE");
+        String nextNumberString = this.readAnyChars(ch, "0123456789.+-eE", validNumberPattern);
         if (nextNumberString.endsWith(".")) {
             this.nextCharQueue.add(0,'.');
             nextNumberString = nextNumberString.substring(0, nextNumberString.length()-1);
@@ -390,11 +390,19 @@ public class Lexer {
     }
 
     private String readAnyChars(Character any, String nextChars) throws IOException {
+        return this.readAnyChars(any, nextChars, null);
+    }
+
+    private String readAnyChars(Character any, String nextChars, Pattern pattern) throws IOException {
         var str = new StringBuilder();
         str.append(any);
         readNext();
         var ch = this.peekNext();
         while (ch != null && nextChars.contains(ch.toString())) {
+            var tmp = str.toString()+ch;
+            if (pattern != null && !pattern.matcher(tmp).matches()) {
+                break;
+            }
             str.append(ch);
             readNext();
             ch = this.peekNext();
