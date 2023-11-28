@@ -56,3 +56,84 @@ parent(bob, charlie).
 
 'asdfasdfsafd3333'
 "hello world!"
+
+% https://en.wikipedia.org/wiki/Prolog_syntax_and_semantics
+
+% A cut (!) inside a rule will prevent Prolog from backtracking any predicates behind the cut:
+predicate(X) :- one(X), !, two(X).
+
+% Anonymous variables _ are never bound to a value and can be used multiple times in a predicate
+contains(V, [V|_]).
+contains(V, [_|T]) :- contains(V, T).
+
+% The built-in Prolog predicate \+/1 provides negation as failure, which allows for non-monotonic reasoning. The goal \+ illegal(X) in the rule
+legal(X) :- \+ illegal(X).
+
+
+% https://www.onlinegdb.com/online_prolog_compiler
+main:-process,halt.
+process:-write('Hello World').
+:- main.
+
+% There exists special syntax for denoting lists: .(A, B) is equivalent to [A|B]
+.(A, B)
+
+% written as [1 | [2 | [3 | []]]], or even more compactly as [1,2,3]
+.(1, .(2, .(3, [])))
+
+
+% from chatgpt
+
+parent(alice, bob).
+parent(bob, charlie).
+parent(charlie, diana).
+grandparent(X, Y) :- parent(X, Z), parent(Z, Y).
+sibling(X, Y) :- parent(Z, X), parent(Z, Y), X \= Y.
+female(alice).
+male(bob).
+happy(X) :- wealthy(X).
+wealthy(charlie).
+likes(alice, reading).
+likes(bob, football).
+friend(alice, bob).
+friend(bob, charlie).
+married(alice, bob).
+married(charlie, diana).
+likes(X, music) :- happy(X).
+ancestor(X, Y) :- parent(X, Y).
+ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+older(bob, 40).
+older(charlie, 30).
+older(diana, 25).
+older(X, Y) :- born(X, YearX), born(Y, YearY), YearX < YearY.
+born(alice, 1970).
+born(bob, 1990).
+born(charlie, 2010).
+born(diana, 2015).
+happy(X) :- likes(X, music), likes(X, reading).
+animal(dog).
+animal(cat).
+can_fly(bird).
+can_fly(airplane).
+can_swim(fish).
+can_swim(duck).
+color(sky, blue).
+color(grass, green).
+color(sun, yellow).
+color(apple, red).
+color(banana, yellow).
+color(orange, orange).
+shape(circle).
+shape(square).
+shape(triangle).
+shape(rectangle).
+number(1).
+number(2).
+number(3).
+number(4).
+number(5).
+number(00).
+number(0011112222).
+number(0011112222333333).
+odd_number(X) :- number(X), X mod 2 =:= 1.
+even_number(X) :- number(X), X mod 2 =:= 0.

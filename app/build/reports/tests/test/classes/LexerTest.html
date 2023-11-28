@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.043s</div>
+<div class="counter">0.061s</div>
 <p>duration</p>
 </div>
 </td>
@@ -79,7 +79,7 @@
 </thead>
 <tr>
 <td class="success">test()</td>
-<td class="success">0.043s</td>
+<td class="success">0.061s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -97,8 +97,8 @@
 [ parent ( bob , charlie ) . ]
 [ parent ( charlie , diana ) . ]
 [ % Variables, Numbers, and Arithmetic Comparison ]
-[ older ( bob , 440 ) . ]
-[ older ( charlie , X ) :- X is 220 * 22 . ]
+[ older ( bob , 40 ) . ]
+[ older ( charlie , X ) :- X is 20 * 2 . ]
 [ % List and Operators ]
 [ likes ( alice , [ reading , music , travel ] ) . ]
 [ % Rule with conjunction (,) and disjunction (;) ]
@@ -109,13 +109,13 @@
 [ ancestor ( X , Y ) :- parent ( X , Z ) , ancestor ( Z , Y ) . ]
 [ % Query ]
 [ ?- ancestor ( alice , Who ) . ]
-[ X is 55 + 22 . % X will be 7 ]
-[ Y is 55 - 22 . % Y will be 3 ]
-[ Z is 55 * 22 . % Z will be 10 ]
-[ A is 110 / 22 . % A will be 5 ]
-[ B is 110 // 33 . % B will be 3 ]
-[ C is 110 * 33 . % C will be 1 ]
-[ D is 22 ** 33 . % D will be 8 ]
+[ X is 5 + 2 . % X will be 7 ]
+[ Y is 5 - 2 . % Y will be 3 ]
+[ Z is 5 * 2 . % Z will be 10 ]
+[ A is 10 / 2 . % A will be 5 ]
+[ B is 10 // 3 . % B will be 3 ]
+[ C is 10 * 3 . % C will be 1 ]
+[ D is 2 ** 3 . % D will be 8 ]
 [ X = Y . ]
 [ X \= Y . ]
 [ X &lt; Y . ]
@@ -124,16 +124,86 @@
 [ X &gt;= Y . ]
 [ X is Y . ]
 [ X =\= Y . ]
-[ 55 \= 33 . % Succeeds because 5 and 3 are different. ]
-[ X \= 33 . % Succeeds if X is not unifiable with 3. ]
-[ 55 =\= 33 . % Succeeds because 5 is not equal to 3. ]
-[ X is 55 , X =\= 33 . % Succeeds because the value of X (5) is not equal to 3. ]
+[ 5 \= 3 . % Succeeds because 5 and 3 are different. ]
+[ X \= 3 . % Succeeds if X is not unifiable with 3. ]
+[ 5 =\= 3 . % Succeeds because 5 is not equal to 3. ]
+[ X is 5 , X =\= 3 . % Succeeds because the value of X (5) is not equal to 3. ]
 [ X ?= f ( X ) % The ?= operator in Prolog is known as the unify with occur check operator ]
 [ parent ( alice , bob ) . ]
 [ parent ( bob , charlie ) . ]
 [ ?- parent ( alice , Child ) . ]
 [ asdfasdfsafd3333 ]
 [ [104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 33] ]
+[ % https://en.wikipedia.org/wiki/Prolog_syntax_and_semantics ]
+[ % A cut (!) inside a rule will prevent Prolog from backtracking any predicates behind the cut: ]
+[ predicate ( X ) :- one ( X ) , ! , two ( X ) . ]
+[ % Anonymous variables _ are never bound to a value and can be used multiple times in a predicate ]
+[ contains ( V , [ V | _ ] ) . ]
+[ contains ( V , [ _ | T ] ) :- contains ( V , T ) . ]
+[ % The built-in Prolog predicate \+/1 provides negation as failure, which allows for non-monotonic reasoning. The goal \+ illegal(X) in the rule ]
+[ legal ( X ) :- \+ illegal ( X ) . ]
+[ % https://www.onlinegdb.com/online_prolog_compiler ]
+[ main :- process , halt . ]
+[ process :- write ( Hello World ) . ]
+[ :- main . ]
+[ % There exists special syntax for denoting lists: .(A, B) is equivalent to [A|B] ]
+[ . ( A , B ) ]
+[ % written as [1 | [2 | [3 | []]]], or even more compactly as [1,2,3] ]
+[ . ( 1 , . ( 2 , . ( 3 , [ ] ) ) ) ]
+[ % from chatgpt ]
+[ parent ( alice , bob ) . ]
+[ parent ( bob , charlie ) . ]
+[ parent ( charlie , diana ) . ]
+[ grandparent ( X , Y ) :- parent ( X , Z ) , parent ( Z , Y ) . ]
+[ sibling ( X , Y ) :- parent ( Z , X ) , parent ( Z , Y ) , X \= Y . ]
+[ female ( alice ) . ]
+[ male ( bob ) . ]
+[ happy ( X ) :- wealthy ( X ) . ]
+[ wealthy ( charlie ) . ]
+[ likes ( alice , reading ) . ]
+[ likes ( bob , football ) . ]
+[ friend ( alice , bob ) . ]
+[ friend ( bob , charlie ) . ]
+[ married ( alice , bob ) . ]
+[ married ( charlie , diana ) . ]
+[ likes ( X , music ) :- happy ( X ) . ]
+[ ancestor ( X , Y ) :- parent ( X , Y ) . ]
+[ ancestor ( X , Y ) :- parent ( X , Z ) , ancestor ( Z , Y ) . ]
+[ older ( bob , 40 ) . ]
+[ older ( charlie , 30 ) . ]
+[ older ( diana , 25 ) . ]
+[ older ( X , Y ) :- born ( X , YearX ) , born ( Y , YearY ) , YearX &lt; YearY . ]
+[ born ( alice , 1970 ) . ]
+[ born ( bob , 1990 ) . ]
+[ born ( charlie , 2010 ) . ]
+[ born ( diana , 2015 ) . ]
+[ happy ( X ) :- likes ( X , music ) , likes ( X , reading ) . ]
+[ animal ( dog ) . ]
+[ animal ( cat ) . ]
+[ can _ fly ( bird ) . ]
+[ can _ fly ( airplane ) . ]
+[ can _ swim ( fish ) . ]
+[ can _ swim ( duck ) . ]
+[ color ( sky , blue ) . ]
+[ color ( grass , green ) . ]
+[ color ( sun , yellow ) . ]
+[ color ( apple , red ) . ]
+[ color ( banana , yellow ) . ]
+[ color ( orange , orange ) . ]
+[ shape ( circle ) . ]
+[ shape ( square ) . ]
+[ shape ( triangle ) . ]
+[ shape ( rectangle ) . ]
+[ number ( 1 ) . ]
+[ number ( 2 ) . ]
+[ number ( 3 ) . ]
+[ number ( 4 ) . ]
+[ number ( 5 ) . ]
+[ number ( 0 ) . ]
+[ number ( 11112222 ) . ]
+[ number ( 11112222333333 ) . ]
+[ odd _ number ( X ) :- number ( X ) , X * 2 =:= 1 . ]
+[ even _ number ( X ) :- number ( X ) , X * 2 =:= 0 . ]
 </pre>
 </span>
 </div>
@@ -145,7 +215,7 @@
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="http://www.gradle.org">Gradle 8.1</a> at 28 Nov 2023, 22:40:48</p>
+<a href="http://www.gradle.org">Gradle 8.1</a> at 29 Nov 2023, 00:06:46</p>
 </div>
 </div>
 </body>

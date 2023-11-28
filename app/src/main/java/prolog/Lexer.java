@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 public class Lexer {
 
-    private static final String validNumberRegexp = "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$";
+    private static final String validNumberRegexp = "^-?(?:0\\d*|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$";
 
     private final Reader reader;
     private final LinkedList<Character> nextCharQueue;
@@ -87,6 +87,10 @@ public class Lexer {
                 this.readNext();
                 return new TokenValue(Token.POINT, ".");
             }
+            case '!' -> {
+                this.readNext();
+                return new TokenValue(Token.CUT, "!");
+            }
             case '[' -> {
                 this.readNext();
                 return new TokenValue(Token.LBRACKET, "[");
@@ -132,7 +136,19 @@ public class Lexer {
             }
             case ',' -> {
                 this.readNext();
-                return new TokenValue(Token.COMMA, ",");
+                return new TokenValue(Token.AND_OPERATOR, ",");
+            }
+            case '|' -> {
+                this.readNext();
+                return new TokenValue(Token.DECOMPOSITION_OPERATOR, "|");
+            }
+            case '_' -> {
+                this.readNext();
+                return new TokenValue(Token.ATOM_WILDCARD, "_");
+            }
+            case ';' -> {
+                this.readNext();
+                return new TokenValue(Token.OR_OPERATOR, ";");
             }
             case '\'' -> {
                 this.readNext();
@@ -172,16 +188,16 @@ public class Lexer {
         switch (ch) {
             case '<' -> {
                 readNext();
-                return new TokenValue(Token.COMPARISON_OPERATOR, "<");
+                return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "<");
             }
             case '>' -> {
                 readNext();
                 ch = this.peekNext();
                 if (ch == '=') {
                     readNext();
-                    return new TokenValue(Token.COMPARISON_OPERATOR, ">=");
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, ">=");
                 } else {
-                    return new TokenValue(Token.COMPARISON_OPERATOR, ">");
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, ">");
                 }
             }
             case '=' -> {
@@ -192,14 +208,23 @@ public class Lexer {
                     ch = this.peekNext();
                     if (ch == '=') {
                         readNext();
-                        return new TokenValue(Token.ARITHMETIC_INEQUALITY_OPERATOR, "=\\=");
+                        return new TokenValue(Token.ARITHMETIC_INEQUALITY_BINARY_OPERATOR, "=\\=");
                     } else {
-                        throw new IOException("=\\ must be followed by = for NOT EQUAL '"+ch+"'");
+                        throw new IOException("=\\ must be followed by = for NOT EQUAL '" + ch + "'");
                     }
+                } else if (ch == ':') {
+                        readNext();
+                        ch = this.peekNext();
+                        if (ch == '=') {
+                            readNext();
+                            return new TokenValue(Token.ARITHMETIC_EQUALITY_BINARY_OPERATOR, "=:=");
+                        } else {
+                            throw new IOException("=: must be followed by = for EQUAL '"+ch+"'");
+                        }
                 } else if (ch == '<') {
-                    return new TokenValue(Token.COMPARISON_OPERATOR, "=<");
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "=<");
                 } else {
-                    return new TokenValue(Token.COMPARISON_OPERATOR, "=");
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "=");
                 }
             }
             case '\\' -> {
@@ -207,7 +232,10 @@ public class Lexer {
                 ch = this.peekNext();
                 if (ch == '=') {
                     readNext();
-                    return new TokenValue(Token.COMPARISON_OPERATOR, "\\=");
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "\\=");
+                } else if (ch == '+') {
+                        readNext();
+                        return new TokenValue(Token.UNARY_NOT_OPERATOR, "\\+");
                 } else {
                     throw new IOException("\\ must be followed by = for NOT EQUAL '"+ch+"'");
                 }
@@ -215,7 +243,7 @@ public class Lexer {
             case 'i' -> {
                 var atom = this.readAtom(ch);
                 if (atom.equals("is")) {
-                    return new TokenValue(Token.COMPARISON_OPERATOR, "is");
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "is");
                 } else {
                     return new TokenValue(Token.ATOM, atom);
                 }
@@ -364,6 +392,7 @@ public class Lexer {
     private String readAnyChars(Character any, String nextChars) throws IOException {
         var str = new StringBuilder();
         str.append(any);
+        readNext();
         var ch = this.peekNext();
         while (ch != null && nextChars.contains(ch.toString())) {
             str.append(ch);
