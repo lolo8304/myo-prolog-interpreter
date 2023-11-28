@@ -33,14 +33,14 @@ public class Prolog implements Callable<Result> {
     }
 
     @Option(names = "-v", description = "-v specifies verbose level 1")
-    boolean verbose = false;
+    final boolean verbose = false;
     @Option(names = "-vv", description = "-vv specifies verbose level 2")
-    boolean verbose2 = false;
+    final boolean verbose2 = false;
     @Option(names = "-vvv", description = "-vvv specifies verbose level 3")
-    boolean verbose3 = false;
+    final boolean verbose3 = false;
 
     @Override
-    public Result call() throws Exception {
+    public Result call() {
         if (this.verbose) {
             VERBOSE_LEVEL = 1;
         }

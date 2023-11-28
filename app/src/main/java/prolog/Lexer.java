@@ -59,17 +59,6 @@ public class Lexer {
         }
         return this.nextCharQueue.element();
     }
-    private Character peekNext(int pos) throws IOException {
-        if (pos == 0) {
-            return this.peekNext();
-        }
-        while (pos > 0) {
-            if (this.nextCharQueue.size() <= pos) {
-                this.nextCharQueue.get(pos);
-            }
-        }
-        return null;
-    }
 
     private TokenValue parseNextToken() throws IOException {
         var ch = this.peekNext();
@@ -327,13 +316,6 @@ public class Lexer {
         return ch != null && "\"\\/bfnrt".contains(ch.toString());
     }
 
-    private void parseConstant(Character ch, String constant) throws IOException {
-        String foundConstant = this.readAnyChars(ch, constant);
-        if (!constant.equals(foundConstant)) {
-            throw new IOException("found invalid token '"+foundConstant+"' instead of '"+constant+"'");
-        }
-    }
-
     private Number parseNumber(Character ch) throws IOException {
         String nextNumberString = this.readAnyChars(ch, "0123456789.+-eE", validNumberPattern);
         if (nextNumberString.endsWith(".")) {
@@ -359,7 +341,7 @@ public class Lexer {
 
     private String readQuotedAtom(Character quotes) throws IOException {
         var str = new StringBuilder();
-        // dont add quotes
+        // don't add quotes
         var ch = this.peekNext();
         while (ch != null && !ch.equals(quotes)) {
             if (ch == '\\') { // is escaped
@@ -380,7 +362,7 @@ public class Lexer {
         if (ch == null) {
             throw new IOException("Illegal string parsing - so far='"+str+"'");
         }
-        // dont add quotes
+        // don't add quotes
         readNext();
         return str.toString();
     }
@@ -406,9 +388,6 @@ public class Lexer {
             str.append(ch);
             readNext();
             ch = this.peekNext();
-        }
-        if (ch == null) {
-            return str.toString();
         }
         return str.toString();
     }

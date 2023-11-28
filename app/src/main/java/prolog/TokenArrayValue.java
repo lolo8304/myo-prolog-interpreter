@@ -1,6 +1,5 @@
 package prolog;
 
-import java.util.Arrays;
 
 public class TokenArrayValue extends  TokenValue{
     private final int[] array;
