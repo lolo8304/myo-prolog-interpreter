@@ -1,0 +1,37 @@
+(* A Prolog program is a series of clauses *)
+program = { clause, "." } ;
+
+(* A clause can be a fact, a rule, or a query *)
+clause = fact | rule | query ;
+
+(* A fact is an atomic proposition *)
+fact = predicate ;
+
+(* A rule has a head and a body *)
+rule = predicate, ":-", body ;
+
+(* The body of a rule is a series of goals *)
+body = goal, { ",", goal } ;
+
+(* A goal is a predicate, possibly with arguments *)
+goal = predicate ;
+
+(* A predicate is an atom, possibly followed by a list of arguments *)
+predicate = atom, [ "(", argument, { ",", argument }, ")" ] ;
+
+(* Arguments can be atoms, variables, numbers, or compound terms *)
+argument = atom | variable | number | compound_term ;
+
+(* A compound term is a functor followed by a list of arguments *)
+compound_term = functor, "(", argument, { ",", argument }, ")" ;
+
+(* A functor is an atom *)
+functor = atom ;
+
+(* Atoms, variables, and numbers are tokens *)
+atom = "an atom" ;  (* Simplified representation *)
+variable = "a variable" ;
+number = "a number" ;
+
+(* A query is represented by a goal *)
+query = goal ;

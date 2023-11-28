@@ -1,0 +1,58 @@
+"this is a string"
+atom
+:-
+(
+)
+% Facts
+parent(alice, bob).
+parent(bob, charlie).
+parent(charlie, diana).
+
+% Variables, Numbers, and Arithmetic Comparison
+older(bob, 40).
+older(charlie, X) :- X is 20 * 2.
+
+% List and Operators
+likes(alice, [reading, music, travel]).
+
+% Rule with conjunction (,) and disjunction (;)
+grandparent(GP, GC) :- parent(GP, P), parent(P, GC).
+sibling(X, Y) :- parent(Z, X), parent(Z, Y), X \= Y.
+
+% Using built-in predicates
+ancestor(X, Y) :- parent(X, Y).
+ancestor(X, Y) :- parent(X, Z), ancestor(Z, Y).
+
+% Query
+?- ancestor(alice, Who).
+
+X is 5 + 2.  % X will be 7
+Y is 5 - 2.  % Y will be 3
+Z is 5 * 2.  % Z will be 10
+A is 10 / 2.  % A will be 5
+B is 10 // 3.  % B will be 3
+C is 10 mod 3.  % C will be 1
+D is 2 ** 3.  % D will be 8
+
+X = Y.
+X \= Y.
+X < Y.
+X > Y.
+X =< Y.
+X >= Y.
+X is Y.
+X =\= Y.
+
+5 \= 3.   % Succeeds because 5 and 3 are different.
+X \= 3.   % Succeeds if X is not unifiable with 3.
+5 =\= 3.   % Succeeds because 5 is not equal to 3.
+X is 5, X =\= 3.  % Succeeds because the value of X (5) is not equal to 3.
+
+X ?= f(X) % The ?= operator in Prolog is known as the unify with occur check operator
+
+parent(alice, bob).
+parent(bob, charlie).
+?- parent(alice, Child).
+
+'asdfasdfsafd3333'
+"hello world!"
