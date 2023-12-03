@@ -2,7 +2,7 @@ package prolog;
 
 
 public class TokenArrayValue extends  TokenValue{
-    private final int[] array;
+    public final int[] array;
 
     public TokenArrayValue(Token token) {
         super(token);

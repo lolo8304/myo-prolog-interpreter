@@ -2,7 +2,8 @@
 program = { clause, "." } ;
 
 (* A clause can be a fact, a rule, or a query *)
-clause = fact | rule | query ;
+    rem    clause = fact | rule | query ;
+clause = predicate | rule
 
 (* A fact is an atomic proposition *)
 fact = predicate ;
@@ -11,7 +12,19 @@ fact = predicate ;
 rule = predicate, ":-", body ;
 
 (* The body of a rule is a series of goals *)
-body = goal, { ",", goal } ;
+body = expression ;
+expression = term | condition | expression, logical_operator, expression ;
+
+(* A condition can include comparison operators *)
+condition = term, comparison_operator, term ;
+
+(* Logical operators *)
+logical_operator = "," | ";" ;
+
+(* Comparison operators *)
+comparison_operator = "=" | "\\=" | "<" | ">" | "=<" | ">=" ;
+
+term = argument;
 
 (* A goal is a predicate, possibly with arguments *)
 goal = predicate ;
@@ -19,14 +32,18 @@ goal = predicate ;
 (* A predicate is an atom, possibly followed by a list of arguments *)
 predicate = atom, [ "(", argument, { ",", argument }, ")" ] ;
 
+
+
+   rem     (* Arguments can be atoms, variables, numbers, or compound terms *)
+   rem     argument = atom | variable | number | compound_term ;
 (* Arguments can be atoms, variables, numbers, or compound terms *)
 argument = atom | variable | number | compound_term ;
 
 (* A compound term is a functor followed by a list of arguments *)
 compound_term = functor, "(", argument, { ",", argument }, ")" ;
 
-(* A functor is an atom *)
-functor = atom ;
+   rem     (* A functor is an atom *)
+   rem     functor = atom ;
 
 (* Atoms, variables, and numbers are tokens *)
 atom = "an atom" ;  (* Simplified representation *)

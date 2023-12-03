@@ -132,6 +132,8 @@ number(2).
 number(3).
 number(4).
 number(5).
+number(200_000).
+number(2_000).
 number(00).
 number(0011112222).
 number(0011112222333333).
@@ -194,3 +196,6 @@ downcase_atom('Hello', Lower).
 upcase_atom('hello', Upper).
 atom_number('123', N).
 number_chars(123, Chars).
+
+
+[ax=30,bx=20,cx=10].

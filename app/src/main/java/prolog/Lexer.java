@@ -30,10 +30,10 @@ public class Lexer {
 
     public Tokens tokens() throws IOException {
         var tokens = new ArrayList<TokenValue>();
-        var token = this.next();
+        var token = this.parseNextToken();
         while (token != null && token.token != Token.EOF) {
             tokens.add(token);
-            token = this.next();
+            token = this.parseNextToken();
         }
         return new Tokens(tokens.toArray(TokenValue[]::new));
     }
@@ -51,6 +51,7 @@ public class Lexer {
             return this.nextCharQueue.poll();
         }
     }
+
     private Character peekNext() throws IOException {
         if (this.nextCharQueue.isEmpty()) {
             var ch = this.reader.read();
@@ -58,6 +59,23 @@ public class Lexer {
             this.nextCharQueue.add((char)ch);
         }
         return this.nextCharQueue.element();
+    }
+
+    // if lowercase --> atom
+    // if numberlowercase -> atom
+    // if Uppercasenumber -> variable
+    // if lowercasenumber -> atom
+    private TokenValue makeAtomOrVariable(String str, Token atomTokenType) throws IOException {
+        if (Character.isUpperCase(str.charAt(0)) || str.charAt(0) == '_') {
+            return new TokenValue(Token.VARIABLE, str);
+        }
+        if (Character.isLowerCase(str.charAt(0))) {
+            return new TokenValue(atomTokenType, str);
+        }
+        if (Character.isDigit(str.charAt(0))) {
+            return new TokenValue(atomTokenType, str);
+        }
+        return new TokenValue(atomTokenType, str);
     }
 
     private TokenValue parseNextToken() throws IOException {
@@ -82,11 +100,17 @@ public class Lexer {
             }
             case '[' -> {
                 this.readNext();
-                return new TokenValue(Token.OPEN_ARRAY, "[");
+                ch = peekNext();
+                if (ch == ']') {
+                    this.readNext();
+                    return TokenValue.NIL;
+                } else {
+                    return new TokenValue(Token.OPEN_LIST, "[");
+                }
             }
             case ']' -> {
                 this.readNext();
-                return new TokenValue(Token.CLOSE_ARRAY, "]");
+                return new TokenValue(Token.CLOSE_LIST, "]");
             }
             case '(' -> {
                 this.readNext();
@@ -125,24 +149,27 @@ public class Lexer {
             }
             case ',' -> {
                 this.readNext();
-                return new TokenValue(Token.AND_OPERATOR, ",");
+                return new TokenValue(Token.COMMA, ",");
             }
             case '|' -> {
                 this.readNext();
                 return new TokenValue(Token.DECOMPOSITION_OPERATOR, "|");
             }
             case '_' -> {
-                this.readNext();
-                return new TokenValue(Token.ATOM_WILDCARD, "_");
+                var atom = this.readAtom(ch);
+                if (atom.equals("_")) {
+                    return new TokenValue(Token.ANONYMOUS_VARIABLE, atom);
+                } else {
+                    return new TokenValue(Token.VARIABLE, atom);
+                }
             }
             case ';' -> {
                 this.readNext();
-                return new TokenValue(Token.OR_OPERATOR, ";");
+                return new TokenValue(Token.SEMICOLON, ";");
             }
             case '\'' -> {
                 this.readNext();
-                var str = this.readQuotedAtom(ch);
-                return new TokenValue(Token.QUOTED_ATOM, str);
+                return makeAtomOrVariable(this.readQuotedAtom(ch), Token.QUOTED_ATOM);
             }
             case '"' -> {
                 this.readNext();
@@ -151,8 +178,23 @@ public class Lexer {
                 return new TokenArrayValue(Token.ARRAY_OF_CHARACTERS, str);
             }
             case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
-                var number = this.parseNumber(ch);
-                return new TokenValue(Token.NUMBER, number);
+                // 0' character codes. use next char as atom
+                if (ch == '0') {
+                    var firstChar = ch;
+                    this.readNext();
+                    ch = peekNext();
+                    if (ch == '\'') {
+                        this.readNext();
+                        ch = peekNext();
+                        return readEncodedChar(ch);
+                    } else {
+                        var number = this.parseNumber(firstChar, ch);
+                        return new TokenValue(Token.NUMBER, number);
+                    }
+                } else {
+                    var number = this.parseNumber(null, ch);
+                    return new TokenValue(Token.NUMBER, number);
+                }
             }
             case ' ', '\n', '\r', '\t' -> {
                 this.readWhitespace(ch);
@@ -160,11 +202,21 @@ public class Lexer {
             }
             default -> {
                 if (Character.isLetter(ch)) {
-                    var str = this.readAtom(ch);
-                    return new TokenValue(Token.ATOM, str);
+                    return makeAtomOrVariable(this.readAtom(ch), Token.ATOM);
                 }
                 throw new IOException("invalid character parsing '" + ch + "'");
             }
+        }
+    }
+
+    private TokenValue readEncodedChar(Character ch) throws IOException {
+        //TODO check for \u0021
+        if (ch == '\\') {
+            this.readNext();
+        } else {
+            // use ch as single escaped atom "0' " --> " " (space)
+            this.readNext();
+            return new TokenValue(Token.QUOTED_ATOM, String.valueOf(ch));
         }
     }
 
@@ -232,7 +284,7 @@ public class Lexer {
             case 'i' -> {
                 var atom = this.readAtom(ch);
                 if (atom.equals("is")) {
-                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "is");
+                    return new TokenValue(Token.ARITHMETIC_UNIFY_BINARY_OPERATOR, "is");
                 } else {
                     return new TokenValue(Token.ATOM, atom);
                 }
@@ -304,7 +356,7 @@ public class Lexer {
 
     private String readAtom(Character ch) throws IOException {
         var str = new StringBuilder();
-        while (ch != null && Character.isLetterOrDigit(ch)) {
+        while (ch != null && (Character.isLetterOrDigit(ch) || ch == '_')) {
             str.append(ch);
             readNext();
             ch = this.peekNext();
@@ -316,12 +368,16 @@ public class Lexer {
         return ch != null && "\"\\/bfnrt".contains(ch.toString());
     }
 
-    private Number parseNumber(Character ch) throws IOException {
-        String nextNumberString = this.readAnyChars(ch, "0123456789.+-eE", validNumberPattern);
+    private Number parseNumber(Character prefixChars, Character ch) throws IOException {
+        String nextNumberString = this.readAnyChars(ch, "0123456789.+-eE_", validNumberPattern);
+        if (prefixChars != null) {
+            nextNumberString = prefixChars + nextNumberString;
+        }
         if (nextNumberString.endsWith(".")) {
             this.nextCharQueue.add(0,'.');
             nextNumberString = nextNumberString.substring(0, nextNumberString.length()-1);
         }
+        nextNumberString = nextNumberString.replace("_", "");
         try {
             Matcher matcher = validNumberPattern.matcher(nextNumberString);
             if (matcher.matches()) {
