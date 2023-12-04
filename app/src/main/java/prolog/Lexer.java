@@ -6,13 +6,33 @@ import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Lexer {
 
     private static final String validNumberRegexp = "^-?(?:0\\d*|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$";
+
+    private static Map<String, Character> ESCAPED0;
+
+    static {
+        // escaped: \' --> '     '' --> ''   \\ --> \   \" --> "   \% ---> %   \\n --> \n  \\t -> \t   \\r ---> \r
+
+        ESCAPED0 = new HashMap<>();
+        ESCAPED0.put("\\'", '\'');
+        ESCAPED0.put("\\.", '.');
+        ESCAPED0.put("''", '\'');
+        ESCAPED0.put("\\\\", '\\');
+        ESCAPED0.put("\\\"", '\"');
+        ESCAPED0.put("\\%", '%');
+        ESCAPED0.put("\\n", '\n');
+        ESCAPED0.put("\\r", '\r');
+        ESCAPED0.put("\\t", '\t');
+    }
+
 
     private final Reader reader;
     private final LinkedList<Character> nextCharQueue;
@@ -186,7 +206,7 @@ public class Lexer {
                     if (ch == '\'') {
                         this.readNext();
                         ch = peekNext();
-                        return readEncodedChar(ch);
+                        return readUnicodeEncodedChar(ch);
                     } else {
                         var number = this.parseNumber(firstChar, ch);
                         return new TokenValue(Token.NUMBER, number);
@@ -208,15 +228,54 @@ public class Lexer {
             }
         }
     }
+    private int convertUnicodeEscape(String str) throws IOException {
+        if (str.startsWith("\\u")) {
+            return Integer.parseInt(str.substring(2), 16);
+        } else {
+            return Integer.parseInt(str, 16);
+        }
+    }
 
-    private TokenValue readEncodedChar(Character ch) throws IOException {
-        //TODO check for \u0021
+
+    // parse escaped chars
+    // prefix 0x: next char is return as number
+    // escaped: \' --> '     '' --> ''   \\ --> \   \" --> "   \% ---> %   \\n --> \n  \\t -> \t   \\r ---> \r
+    // unicode \u0000 --> int using convertUnicodeEscape
+    private TokenValue readUnicodeEncodedChar(Character ch) throws IOException {
         if (ch == '\\') {
             this.readNext();
+            ch = this.peekNext();
+            if (ch == 'u') {
+                this.readNext();
+                ch = this.peekNext();
+                var codeString = this.readAnyChars(ch, "0123456789");
+                var code = this.convertUnicodeEscape("\\u" + codeString);
+                return new TokenValue(Token.NUMBER, code);
+            } else {
+                var lookup = "\\" + String.valueOf(ch);
+                var escapeChar = ESCAPED0.get(lookup);
+                if (escapeChar != null) {
+                    this.readNext();
+                    return new TokenValue(Token.NUMBER, (int) escapeChar);
+                } else {
+                    throw new IOException("invalid escaped code 0' using >\\" + ch + "<");
+                }
+            }
+        } else if (ch == '\'') {
+            this.readNext();
+            ch = this.peekNext();
+            var lookup = "\'" + ch;
+            var escapeChar = ESCAPED0.get(lookup);
+            if (escapeChar != null) {
+                this.readNext();
+                return new TokenValue(Token.NUMBER, (int) escapeChar);
+            } else {
+                throw new IOException("invalid ' escaped code 0''_ using >" + ch + "<");
+            }
         } else {
             // use ch as single escaped atom "0' " --> " " (space)
             this.readNext();
-            return new TokenValue(Token.QUOTED_ATOM, String.valueOf(ch));
+            return new TokenValue(Token.NUMBER, (int)ch);
         }
     }
 
@@ -310,6 +369,11 @@ public class Lexer {
                 if (ch == '/') {
                     readNext();
                     return new TokenValue(Token.ARITHMETIC_OPERATOR, "//");
+                } else if (ch == '*') {
+                    readNext();
+                    ch = this.peekNext();
+                    var comment = this.readLongComment(ch);
+                    return new TokenValue(Token.COMMENT, comment);
                 } else {
                     return new TokenValue(Token.ARITHMETIC_OPERATOR, "/");
                 }
@@ -335,6 +399,32 @@ public class Lexer {
             default -> throw new IOException("Illegal arithmetic operation '"+ch+"'");
         }
     }
+
+    private String readLongComment(Character ch) throws IOException {
+        var str = new StringBuilder();
+        str.append("/*");
+        var endComment = false;
+        do {
+            while (ch != null && ch != '*') {
+                str.append(ch);
+                readNext();
+                ch = this.peekNext();
+            }
+            if (ch != null) {
+                var lastCr = ch;
+                str.append(ch);
+                readNext();
+                ch = this.peekNext();
+                str.append(ch);
+                if (lastCr == '*' && ch == '/') {
+                    readNext();
+                    endComment = true;
+                }
+            }
+        } while (!endComment);
+        return str.toString();
+    }
+
 
     private String readComment(Character ch) throws IOException {
         var str = new StringBuilder();
@@ -431,11 +521,8 @@ public class Lexer {
         return this.readAnyChars(any, nextChars, null);
     }
 
-    private String readAnyChars(Character any, String nextChars, Pattern pattern) throws IOException {
+    private String readAnyChars(Character ch, String nextChars, Pattern pattern) throws IOException {
         var str = new StringBuilder();
-        str.append(any);
-        readNext();
-        var ch = this.peekNext();
         while (ch != null && nextChars.contains(ch.toString())) {
             var tmp = str.toString()+ch;
             if (pattern != null && !pattern.matcher(tmp).matches()) {

@@ -77,11 +77,11 @@ public class ListsTest {
             var program = parser.parse();
 
             //Action
-            var list = program.get().clauses.get(0).fact.predicate.arguments.get(0);
+            var list = program.get();
             var str = list.toString();
 
             // Assert
-            assertEquals("\"ab\"", str);
+            assertEquals("f(\"ab\").", str);
         }
     }
 
@@ -103,11 +103,11 @@ public class ListsTest {
             var program = parser.parse();
 
             //Action
-            var list = program.get().clauses.get(0).fact.predicate.arguments.get(0);
+            var list = program.get();
             var str = list.toString();
 
             // Assert
-            assertEquals("\"abc\"", str);
+            assertEquals("f(\"abc\").", str);
         }
     }
 
@@ -127,11 +127,11 @@ public class ListsTest {
             var program = parser.parse();
 
             //Action
-            var list = program.get().clauses.get(0).fact.predicate.arguments.get(0);
+            var list = program.get();
             var str = list.toString();
 
             // Assert
-            assertEquals("f(39)", str);
+            assertEquals("f(39).", str);
         }
     }
 }

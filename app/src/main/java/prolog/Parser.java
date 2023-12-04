@@ -70,7 +70,7 @@ public class Parser {
             return Optional.empty();
         }
         var unify = this.readNextToken();
-        if (unify.token == Token.UNIFY) {
+        if (unify.is(Token.UNIFY)) {
             var body = this.parseExpression();
             return Optional.of(new ClauseNode(new RuleNode(fact.get().predicate, body)));
         } else {
@@ -80,7 +80,8 @@ public class Parser {
     }
 
     public Optional<FactNode> parseFact() throws IOException {
-        return this.parsePredicate().map(FactNode::new);
+        var pred = this.parsePredicate();
+        return pred.map(FactNode::new);
     }
 
 
@@ -119,7 +120,7 @@ public class Parser {
         if (atom.token == Token.EOF) {
             return Optional.empty();
         }
-        if (atom.isNotAnyOf(Token.ATOM, Token.QUOTED_ATOM)) {
+        if (atom.isNotAnyOf(Token.ATOM, Token.QUOTED_ATOM, Token.VARIABLE)) {
             throw new IOException("Predicate must start with an atom or single quotes but was token '"+atom+"'");
         }
         var lparent = this.readNextToken();
@@ -198,6 +199,11 @@ public class Parser {
             this.pushBackToken(argument);
             var compound = this.parseListNotation();
             return new ArgumentNode(compound);
+        } else if (argument.toValueString().equals("+") || argument.toValueString().equals("-")) {
+            // check if next is a
+            //      number or (....)
+            var arg = this.parseArgument();
+            return new ArgumentNode(new CompoundTermNode(argument, Collections.singletonList(arg)));
         }
         throw new IOException("Illegal token found for argument node '"+argument+"'");
     }
