@@ -2,12 +2,11 @@ package prolog.nodes;
 
 import prolog.Token;
 import prolog.TokenValue;
+import prolog.interpreter.Subst;
+import prolog.interpreter.Term;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class CompoundListNode extends CompoundNode implements Iterable<ArgumentNode> {

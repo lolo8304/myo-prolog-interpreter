@@ -1,13 +1,14 @@
 package prolog.nodes;
 
-import prolog.Memory;
-import prolog.Prolog;
-import prolog.PrologRuntime;
+import prolog.TokenValue;
+import prolog.interpreter.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-public class FactNode extends AbstractNode {
+public class FactNode extends AbstractNode implements Term {
     public final PredicateNode predicate;
 
     public FactNode(PredicateNode predicate) {
@@ -15,10 +16,10 @@ public class FactNode extends AbstractNode {
     }
     @Override
     public void execute(PrologRuntime runtime) throws IOException {
-        if (this.isGoal()) {
-            runtime.memory.addFact(this);
-            System.out.println("true");
-        } else {
+        if (this.isGround()) {
+            runtime.top().memory.addFact(this);
+        }
+        if (runtime.inQueryMode()) {
             runtime.findSolution(this);
         }
     }
@@ -36,6 +37,10 @@ public class FactNode extends AbstractNode {
         return Objects.equals(this.key(), factNode.key());
     }
 
+    public String predicateIndicator() {
+        return this.predicate.predicateIndicator();
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(this.key());
@@ -45,7 +50,53 @@ public class FactNode extends AbstractNode {
         return this.predicate.key();
     }
 
-    public boolean isGoal() {
-        return this.predicate.isGoal();
+    @Override
+    public boolean isGround() {
+        return this.predicate.isGround();
+    }
+
+    @Override
+    public boolean isPartiallyInstantiated() {
+        return this.predicate.isPartiallyInstantiated();
+    }
+
+    @Override
+    public boolean isInstantiated() {
+        return this.predicate.isInstantiated();
+    }
+
+    @Override
+    public boolean isUnInstantiated() {
+        return this.predicate.isUnInstantiated();
+    }
+
+    @Override
+    public FreeVars freevars() {
+        return this.predicate.freevars();
+    }
+
+    @Override
+    public Term map(Subst s) {
+        return this.predicate.map(s);
+    }
+
+    @Override
+    public Optional<Subst> pmatch(Term term, Subst s) {
+        return this.predicate.pmatch(term, s);
+    }
+
+    @Override
+    public Optional<Subst> unify(Term y, Subst s) {
+        return this.predicate.unify(y,s);
+    }
+
+    @Override
+    public Optional<Constr> asConstr() {
+        return this.predicate.asConstr();
+    }
+
+    @Override
+    public Optional<Var> asVar() {
+        return this.predicate.asVar();
     }
 }

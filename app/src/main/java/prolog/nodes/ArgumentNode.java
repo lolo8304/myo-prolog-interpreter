@@ -1,15 +1,15 @@
 package prolog.nodes;
 
-import prolog.Memory;
-import prolog.PrologRuntime;
+import prolog.interpreter.*;
 import prolog.Token;
 import prolog.TokenValue;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-public class ArgumentNode extends AbstractNode {
+public class ArgumentNode extends AbstractNode implements Term  {
 
     public static ArgumentNode NIL_ARGUMENT;
     static {
@@ -70,8 +70,32 @@ public class ArgumentNode extends AbstractNode {
         return this.compoundTerm.append(builder);
     }
 
+    private TermStatus termStatus() {
+        if (this.variable != null) return this.variable;
+        if (this.atom != null) return this.atom;
+        if (this.number != null) return this.number;
+        return this.compoundTerm;
+    }
+
+    @Override
     public boolean isGround() {
-        return (this.atom !=null || this.number != null) || this.compoundTerm.isGround();
+        return this.termStatus().isGround();
+    }
+
+    @Override
+    public boolean isPartiallyInstantiated() {
+        return this.termStatus().isPartiallyInstantiated();
+    }
+
+    @Override
+    public boolean isInstantiated() {
+        return this.termStatus().isInstantiated();
+    }
+
+    @Override
+    public boolean isUnInstantiated() {
+        if (this.compoundTerm != null) return false;
+        return this.termStatus().isUnInstantiated();
     }
 
     public List<ArgumentNode> arguments() {
@@ -85,4 +109,56 @@ public class ArgumentNode extends AbstractNode {
         } else
             return this.compoundTerm != null && this.compoundTerm.isChars();
     }
+
+    @Override
+    public FreeVars freevars() {
+        if (this.variable != null) {
+            return FreeVars.of(this.variable);
+        } else if (this.compoundTerm != null) {
+            return this.compoundTerm.freevars();
+        } else {
+            return super.freevars();
+        }
+    }
+
+    @Override
+    public Term map(Subst s) {
+        if (this.atom != null || this.number != null) return this;
+        if (this.compoundTerm != null) return this.compoundTerm.map(s);
+        return this.variable.map(s);
+    }
+
+    @Override
+    public Optional<Subst> pmatch(Term term, Subst s) {
+        if (this.atom != null || this.number != null) return Optional.empty();
+        if (this.compoundTerm != null) return this.compoundTerm.pmatch(term, s);
+        return this.variable.pmatch(term, s);
+    }
+
+    @Override
+    public Optional<Subst> unify(Term y, Subst s) {
+        if (this.atom != null || this.number != null) return Optional.empty();
+        if (this.compoundTerm != null) return this.compoundTerm.unify(y, s);
+        return this.variable.unify(y, s);
+    }
+
+    @Override
+    public Optional<Constr> asConstr() {
+        if (this.compoundTerm != null) return this.compoundTerm.asConstr();
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Var> asVar() {
+        if (this.variable != null) return this.variable.asVar();
+        return Optional.empty();
+    }
+
+    public PredicateNode asPredicate() {
+        if (this.compoundTerm != null) return this.compoundTerm.asPredicate();
+        if (this.atom != null) return new PredicateNode(this.atom);
+        if (this.variable != null) return new PredicateNode(this.variable);
+        return new PredicateNode(this.number);
+    }
+
 }

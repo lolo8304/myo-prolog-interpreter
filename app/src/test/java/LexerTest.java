@@ -16,22 +16,12 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LexerTest {
-
-    private BufferedReader reader;
-
-    void ReadReader(String testfile) throws FileNotFoundException, URISyntaxException {
-        URL resource = LexerTest.class.getResource("tests/"+testfile);
-        File file = Paths.get(resource.toURI()).toFile();
-        reader = new BufferedReader(new FileReader(file));
-    }
-
+class LexerTest  extends Tester {
     @AfterEach
     void CloseReader() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        super.CloseReader();
     }
+
 
     @Test void test() throws URISyntaxException, IOException {
         // Arrange

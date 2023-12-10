@@ -1,7 +1,9 @@
 package prolog.nodes;
 
-import prolog.Memory;
-import prolog.PrologRuntime;
+import prolog.TokenValue;
+import prolog.interpreter.Constr;
+import prolog.interpreter.FreeVars;
+import prolog.interpreter.PrologRuntime;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,4 +42,33 @@ public class ProgramNode extends AbstractNode {
         return builder;
     }
 
+    @Override
+    public FreeVars freevars() {
+        return new FreeVars(this.clauses.stream().flatMap(x -> x.freevars().stream()).toList());
+    }
+
+    @Override
+    public boolean isGround() {
+        return this.clauses.stream().allMatch(ClauseNode::isGround);
+    }
+
+    @Override
+    public boolean isPartiallyInstantiated() {
+        return this.clauses.stream().allMatch(ClauseNode::isPartiallyInstantiated);
+    }
+
+    @Override
+    public boolean isInstantiated() {
+        return this.clauses.stream().allMatch(ClauseNode::isInstantiated);
+    }
+
+    @Override
+    public boolean isUnInstantiated() {
+        return this.clauses.stream().allMatch(ClauseNode::isUnInstantiated);
+    }
+
+    @Override
+    public Optional<Constr> asConstr() {
+        return Optional.empty();
+    }
 }

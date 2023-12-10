@@ -12,21 +12,12 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class IsoConformityTest {
+public class IsoConformityTest extends Tester {
 
-    private BufferedReader reader;
-
-    void ReadReader(String testfile) throws FileNotFoundException, URISyntaxException {
-        URL resource = IsoConformityTest.class.getResource("tests/"+testfile);
-        File file = Paths.get(resource.toURI()).toFile();
-        reader = new BufferedReader(new FileReader(file));
-    }
 
     @AfterEach
     void CloseReader() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        super.CloseReader();
     }
 
     @ParameterizedTest

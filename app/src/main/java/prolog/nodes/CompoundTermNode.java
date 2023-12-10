@@ -1,14 +1,14 @@
 package prolog.nodes;
 
-import prolog.PrologRuntime;
-import prolog.Token;
 import prolog.TokenValue;
+import prolog.interpreter.Constr;
+import prolog.interpreter.Subst;
+import prolog.interpreter.Term;
+import prolog.interpreter.Var;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static prolog.nodes.ArgumentNode.NIL_ARGUMENT;
+import java.util.Optional;
 
 public class CompoundTermNode extends CompoundNode {
     public final List<ArgumentNode> arguments;
@@ -34,6 +34,5 @@ public class CompoundTermNode extends CompoundNode {
         this.resetKey();
         return this;
     }
-
 
 }

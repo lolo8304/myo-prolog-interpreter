@@ -1,29 +1,33 @@
-package prolog;
+package prolog.interpreter;
 
+import prolog.Prolog;
+import prolog.TokenValue;
+import prolog.nodes.ClauseNode;
 import prolog.nodes.CompoundNode;
 import prolog.nodes.FactNode;
 import prolog.nodes.RuleNode;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class Memory {
 
     private final PrologRuntime runtime;
 
-    private final Map<String, TokenValue> atoms;
-    private final Map<String, TokenValue> variables;
-    private final Map<String, Set<CompoundNode>> compoundTerms;
-    private final Map<String, Set<FactNode>> facts;
-    private final Map<String, Set<RuleNode>> rules;
+    public final Map<String, TokenValue> atoms;
+    public final Map<String, TokenValue> variables;
+    public final Map<String, Set<CompoundNode>> compoundTerms;
+    public final Map<String, Set<FactNode>> facts;
+    public final Map<String, Set<RuleNode>> rules;
 
     public Memory(PrologRuntime runtime) {
         this.runtime = runtime;
-        this.atoms = new HashMap<>();
-        this.variables = new HashMap<>();
-        this.compoundTerms = new HashMap<>();
-        this.facts = new HashMap<>();
-        this.rules = new HashMap<>();
+        this.atoms = new LinkedHashMap<>();
+        this.variables = new LinkedHashMap<>();
+        this.compoundTerms = new LinkedHashMap<>();
+        this.facts = new LinkedHashMap<>();
+        this.rules = new LinkedHashMap<>();
     }
 
     public Memory addAtom(TokenValue atom) throws IOException {
@@ -52,7 +56,7 @@ public class Memory {
     }
     public Memory addCompoundTerm(CompoundNode compoundTerm) throws IOException {
         var functorKey = compoundTerm.principalFunctor();
-        var set = this.compoundTerms.computeIfAbsent(functorKey, k -> new HashSet<>());
+        var set = this.compoundTerms.computeIfAbsent(functorKey, k -> new LinkedHashSet<>());
         if (set.contains(compoundTerm)) {
             throw new IOException("Compound term "+compoundTerm.key()+" cannot be stored twice");
         }
@@ -65,7 +69,7 @@ public class Memory {
 
     public Memory addRule(RuleNode rule) throws IOException {
         var predicateKey = rule.head.predicateIndicator();
-        var set = this.rules.computeIfAbsent(predicateKey, k -> new HashSet<>());
+        var set = this.rules.computeIfAbsent(predicateKey, k -> new LinkedHashSet<>());
         if (set.contains(rule)) {
             throw new IOException("Rule "+rule.key()+" cannot be stored twice");
         }
@@ -77,7 +81,7 @@ public class Memory {
     }
     public Memory addFact(FactNode fact) throws IOException {
         var predicateKey = fact.predicate.predicateIndicator();
-        var set = this.facts.computeIfAbsent(predicateKey, k -> new HashSet<>());
+        var set = this.facts.computeIfAbsent(predicateKey, k -> new LinkedHashSet<>());
         if (set.contains(fact)) {
             throw new IOException("Fact "+fact.key()+" cannot be stored twice");
         }
@@ -87,4 +91,19 @@ public class Memory {
         }
         return this;
     }
+
+    public Stream<Map.Entry<String, Set<FactNode>>> facts() {
+        return this.facts.entrySet().stream();
+    }
+
+    public Stream<Term> clauses() {
+        Stream<Term> fs = this.facts.values().stream().flatMap(Collection::stream);
+        Stream<Term> rs = this.rules.values().stream().flatMap(Collection::stream);
+        return Stream.concat(fs, rs);
+    }
+
+    public Stream<Map.Entry<String, Set<RuleNode>>> rules() {
+        return this.rules.entrySet().stream();
+    }
+
 }

@@ -16,22 +16,12 @@ import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ParserTest {
-
-    private BufferedReader reader;
-
-    void ReadReader(String testfile) throws FileNotFoundException, URISyntaxException {
-        URL resource = ParserTest.class.getResource("tests/"+testfile);
-        File file = Paths.get(resource.toURI()).toFile();
-        reader = new BufferedReader(new FileReader(file));
-    }
-
+class ParserTest  extends Tester {
     @AfterEach
     void CloseReader() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        super.CloseReader();
     }
+
 
     @Test void test() throws URISyntaxException, IOException {
         // Arrange

@@ -1,32 +1,15 @@
 package prolog.nodes;
 
-import prolog.Memory;
-import prolog.PrologRuntime;
+import prolog.interpreter.*;
 import prolog.TokenValue;
 
-public class LogicalExpressionNode extends AbstractNode {
-    private final ExpressionNode expression;
-    private final TokenValue logicalOperation;
-    private final ExpressionNode anotherExpression;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-    public LogicalExpressionNode(ExpressionNode expression, TokenValue logicalOperation, ExpressionNode anotherExpression) {
-        this.expression = expression;
-        this.logicalOperation = logicalOperation;
-        this.anotherExpression = anotherExpression;
-    }
-    @Override
-    public void execute(PrologRuntime runtime) {
-
-    }
-
-    @Override
-    public StringBuilder append(StringBuilder builder) {
-        builder = this.expression.append(builder);
-        builder.append(this.logicalOperation.toValueString());
-        return this.anotherExpression.append(builder);
-    }
-
-    public boolean isGround() {
-        return this.expression.isGoal() && this.anotherExpression.isGoal();
+public class LogicalExpressionNode extends ConditionNode {
+    public LogicalExpressionNode(List<ArgumentNode> terms, List<TokenValue> conditions) {
+        super(terms, conditions);
     }
 }

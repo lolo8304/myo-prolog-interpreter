@@ -3,7 +3,7 @@ program = { clause, "." } ;
 
 (* A clause can be a fact, a rule, or a query *)
     rem    clause = fact | rule | query ;
-clause = predicate | rule
+clause = fact | rule | query
 
 (* A fact is an atomic proposition *)
 fact = predicate ;

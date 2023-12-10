@@ -1,16 +1,17 @@
 package prolog.nodes;
 
-import prolog.PrologRuntime;
+import prolog.interpreter.*;
 import prolog.TokenValue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static prolog.nodes.ArgumentNode.NIL_ARGUMENT;
 
-public abstract class CompoundNode extends AbstractNode {
+public abstract class CompoundNode extends AbstractNode implements Term {
     public final TokenValue functor;
     private String _key;
 
@@ -59,12 +60,24 @@ public abstract class CompoundNode extends AbstractNode {
 
     }
 
+    @Override
     public boolean isGround() {
         return !this.isPartiallyInstantiated();
     }
 
+    @Override
     public boolean isPartiallyInstantiated() {
-        return this.arguments().stream().anyMatch(x -> !x.isGround());
+        return this.arguments().stream().anyMatch(ArgumentNode::isUnInstantiated);
+    }
+
+    @Override
+    public boolean isInstantiated() {
+        return this.arguments().stream().allMatch(ArgumentNode::isInstantiated);
+    }
+
+    @Override
+    public boolean isUnInstantiated() {
+        return false;
     }
 
     @Override
@@ -101,5 +114,41 @@ public abstract class CompoundNode extends AbstractNode {
             }
             return lastTail.compoundTerm;
         }
+    }
+
+    @Override
+    public FreeVars freevars() {
+        return new FreeVars(this.arguments().stream().flatMap(x -> x.freevars().stream()).toList());
+    }
+
+    @Override
+    public Term map(Subst s) {
+        return new Constr(this.functor, this.arguments().stream().map(x -> x.map(s)).toList());
+    }
+
+    @Override
+    public Optional<Subst> pmatch(Term term, Subst s) {
+        return this.asConstr().get().pmatch(term, s);
+    }
+
+
+    @Override
+    public Optional<Subst> unify(Term y, Subst s) {
+        return this.asConstr().get().unify(y, s);
+    }
+
+    @Override
+    public Optional<Constr> asConstr() {
+        List<Term> terms = new ArrayList<>(this.arguments());
+        return Optional.of(new Constr(this.functor, terms));
+    }
+
+    @Override
+    public Optional<Var> asVar() {
+        return Optional.empty();
+    }
+
+    public PredicateNode asPredicate() {
+        return new PredicateNode(this.functor, this.arguments());
     }
 }

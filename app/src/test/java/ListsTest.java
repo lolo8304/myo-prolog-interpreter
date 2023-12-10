@@ -10,21 +10,10 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ListsTest {
-
-    private BufferedReader reader;
-
-    void ReadReader(String testfile) throws FileNotFoundException, URISyntaxException {
-        URL resource = ListsTest.class.getResource("tests/"+testfile);
-        File file = Paths.get(resource.toURI()).toFile();
-        reader = new BufferedReader(new FileReader(file));
-    }
-
+public class ListsTest  extends Tester {
     @AfterEach
     void CloseReader() throws IOException {
-        if (reader != null) {
-            reader.close();
-        }
+        super.CloseReader();
     }
 
     @Test

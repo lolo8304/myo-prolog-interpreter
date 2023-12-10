@@ -1,13 +1,15 @@
 package prolog.nodes;
 
-import prolog.PrologRuntime;
+import prolog.interpreter.*;
 import prolog.TokenValue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-public class PredicateNode extends AbstractNode {
+public class PredicateNode extends AbstractNode implements Term {
     public final TokenValue atom;
     public final List<ArgumentNode> arguments;
 
@@ -16,6 +18,11 @@ public class PredicateNode extends AbstractNode {
     public PredicateNode(TokenValue atom) {
         this.atom = atom;
         this.arguments = new ArrayList<>();
+        this._key = null;
+    }
+    public PredicateNode(TokenValue atom, List<ArgumentNode> arguments) {
+        this.atom = atom;
+        this.arguments = arguments;
         this._key = null;
     }
 
@@ -72,7 +79,75 @@ public class PredicateNode extends AbstractNode {
         return Objects.hash(this.key());
     }
 
-    public boolean isGoal() {
-        return this.arguments.isEmpty() || this.arguments.stream().allMatch(ArgumentNode::isGround);
+
+    // true if: no arguments and all of the arguments are Ground
+    @Override
+    public boolean isGround() {
+        if (this.arguments.isEmpty()) {
+            return this.atom.isGround();
+        }
+        return this.arguments.stream().allMatch(ArgumentNode::isGround);
+    }
+
+
+    // at least 1 must be Uninstantiated
+    @Override
+    public boolean isPartiallyInstantiated() {
+        if (this.arguments.isEmpty()) {
+            return this.atom.isPartiallyInstantiated();
+        }
+        return this.arguments.stream().anyMatch(x ->
+            x.isUnInstantiated() || x.isPartiallyInstantiated()
+        );
+    }
+
+    @Override
+    public boolean isInstantiated() {
+        if (this.arguments.isEmpty()) {
+            return this.atom.isInstantiated();
+        }
+        return this.arguments.stream().allMatch(ArgumentNode::isInstantiated);
+    }
+
+    @Override
+    public boolean isUnInstantiated() {
+        if (this.arguments.isEmpty()) {
+            return this.atom.isUnInstantiated();
+        }
+        return false;
+    }
+
+    @Override
+    public FreeVars freevars() {
+        if (this.arity() == 0) {
+            return TokenValue.EMPTY_LIST;
+        } else {
+            return new FreeVars(this.arguments.stream().flatMap(x -> x.freevars().stream()).toList());
+        }
+    }
+
+    @Override
+    public Term map(Subst s) {
+        return new Constr(this.atom, this.arguments.stream().map(x -> x.map(s)).toList());
+    }
+
+    @Override
+    public Optional<Constr> asConstr() {
+        return Optional.of(new Constr(this.atom, new ArrayList<Term>(this.arguments)));
+    }
+
+    @Override
+    public Optional<Var> asVar() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Subst> pmatch(Term term, Subst s) {
+        return this.asConstr().get().pmatch(term, s);
+    }
+
+    @Override
+    public Optional<Subst> unify(Term y, Subst s) {
+        return this.asConstr().get().unify(y,s);
     }
 }

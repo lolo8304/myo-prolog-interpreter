@@ -10,6 +10,7 @@ hello('world').
 'helloworld'(hello).
 
 parent(X, Y) :- child(Y, X).
+parent(X, Y) :- child(Y, X), child(Z, X), child(Z,Y).
 
 area_of_rectangle(Length, Width, Area) :- Area is Length * Width.
 
@@ -19,3 +20,6 @@ contains(V, [_|T]) :- contains(V, T).
 f([a, b]).
 f([a, []]).
 f([a | []]).
+
+f(X).
+3 >= 2.

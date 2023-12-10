@@ -1,0 +1,38 @@
+parent(alice, bob). %G I
+parent(bob, charlie). %G I
+parent(charlie, diana). %G I
+
+older(bob, 40). %G I
+older(charlie, X). %P
+
+hello(alice). %G I
+hello('world'). %G I
+'helloworld'(hello). %G I
+
+X. %U
+f(X). %P
+f(f(X)). %P
+f(f(Y),f(f(X))). %P
+f(x). %G I
+f(f(x)). %G I
+f(f(y),f(f(x))). %G I
+
+parent(X, Y) :- child(Y, X). %P
+parent(X, peter) :- child(Y, X). %P
+parent(X, Y) :- child(Y, X), child(Z, X), child(Z,Y). %P
+parent(X, Y) :- child(Y, peter), child(Z, X), child(Z,Y). %P
+
+area_of_rectangle(Length, Width, Area) :- Area is Length * Width.  %P
+area_of_rectangle(Length, Width, Area) :- Area is Length * 2.  %P
+
+contains(V, [V|_]). %P
+contains(V, [_|T]) :- contains(V, T). %P
+contains(V, [V|T]) :- contains(V, T). %P
+
+f([a, b]). %G I
+f([a, []]). %G I
+f([X, []]). %P
+f([a | []]). %G I
+
+x. % G I
+3 >= 2. %I

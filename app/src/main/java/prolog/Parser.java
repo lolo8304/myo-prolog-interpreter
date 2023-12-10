@@ -65,25 +65,28 @@ public class Parser {
     //* A clause can be a fact, a rule, or a query *)
     //clause = predicate | rule ;
     private Optional<ClauseNode> parseClause() throws IOException {
-        var fact = this.parseFact();
-        if (fact.isEmpty()) {
+        var exp = this.parseExpression();
+        if (exp.isEmpty()) {
             return Optional.empty();
         }
-        var unify = this.readNextToken();
-        if (unify.is(Token.UNIFY)) {
-            var body = this.parseExpression();
-            return Optional.of(new ClauseNode(new RuleNode(fact.get().predicate, body)));
+        var predicate = exp.get().asPredicate();
+        if (predicate.isPresent()) {
+            var fact = new FactNode(predicate.get());
+            var unify = this.readNextToken();
+            if (unify.is(Token.UNIFY)) {
+                var body = this.parseExpression();
+                if (body.isEmpty()) {
+                    throw new IOException("Body expcted but EOF");
+                }
+                return Optional.of(new ClauseNode(new RuleNode(fact.predicate, body.get())));
+            } else {
+                this.pushBackToken(unify);
+                return Optional.of(new ClauseNode(fact));
+            }
         } else {
-            this.pushBackToken(unify);
-            return Optional.of(new ClauseNode(fact.get()));
+            return Optional.of(new ClauseNode(exp.get()));
         }
     }
-
-    public Optional<FactNode> parseFact() throws IOException {
-        var pred = this.parsePredicate();
-        return pred.map(FactNode::new);
-    }
-
 
     // expression = term | condition | expression, logical_operator, expression ;
     //
@@ -98,18 +101,39 @@ public class Parser {
     //
     // term = argument;
 
-    private ExpressionNode parseExpression() throws IOException {
-        var argument = this.parseArgument();
-        var comparison_operator = this.readNextToken();
-        if (comparison_operator.isComparisonOperator()) {
-            var otherArgument = this.parseArgument();
-            return new ExpressionNode(new ConditionNode(argument, comparison_operator, otherArgument));
-        } else if (comparison_operator.isLogicalAndArithmeticOperator()) {
-            var otherExpression = this.parseExpression();
-            return new ExpressionNode(new LogicalExpressionNode(new ExpressionNode(argument), comparison_operator, otherExpression));
+    private Optional<ExpressionNode> parseExpression() throws IOException {
+        var argument = this.parseArgumentOptional();
+        if (argument.isEmpty()) return Optional.empty();
+
+        var operator = this.readNextToken();
+        if (operator.isComparisonOperator()) {
+            var listOfArguments = new ArrayList<ArgumentNode>();
+            var listOfConditions = new ArrayList<TokenValue>();
+            while (operator.isComparisonOperator()) {
+                listOfArguments.add(argument.get());
+                listOfConditions.add(operator);
+                argument = this.parseArgumentOptional();
+                operator = this.readNextToken();
+            }
+            listOfArguments.add(argument.get());
+            this.pushBackToken(operator);
+            return Optional.of(new ExpressionNode(new ConditionNode(listOfArguments, listOfConditions)));
+
+        } else if (operator.isLogicalAndArithmeticOperator()) {
+            var listOfArguments = new ArrayList<ArgumentNode>();
+            var listOfConditions = new ArrayList<TokenValue>();
+            while (operator.isLogicalAndArithmeticOperator()) {
+                listOfArguments.add(argument.get());
+                listOfConditions.add(operator);
+                argument = this.parseArgumentOptional();
+                operator = this.readNextToken();
+            }
+            listOfArguments.add(argument.get());
+            this.pushBackToken(operator);
+            return Optional.of(new ExpressionNode(new LogicalExpressionNode(listOfArguments, listOfConditions)));
         } else {
-            this.pushBackToken(comparison_operator);
-            return new ExpressionNode(argument);
+            this.pushBackToken(operator);
+            return Optional.of(new ExpressionNode(argument.get()));
         }
     }
 
@@ -120,7 +144,7 @@ public class Parser {
         if (atom.token == Token.EOF) {
             return Optional.empty();
         }
-        if (atom.isNotAnyOf(Token.ATOM, Token.QUOTED_ATOM, Token.VARIABLE)) {
+        if (atom.isNotAnyOf(Token.ATOM, Token.QUOTED_ATOM, Token.VARIABLE, Token.NUMBER)) {
             throw new IOException("Predicate must start with an atom or single quotes but was token '"+atom+"'");
         }
         var lparent = this.readNextToken();
@@ -172,38 +196,42 @@ public class Parser {
         return compoundTermNode.tryAsListNotation();
     }
 
+    private ArgumentNode parseArgument() throws IOException {
+        return this.parseArgumentOptional().get();
+    }
 
     // (* Arguments can be atoms, variables, numbers, or compound terms *)
     //argument = atom | variable | number | predicate ;
-    private ArgumentNode parseArgument() throws IOException {
+    private Optional<ArgumentNode> parseArgumentOptional() throws IOException {
         var argument = this.readNextToken();
+        if (argument.is(Token.EOF)) return Optional.empty();
         if (argument.is(Token.VARIABLE, Token.NUMBER, Token.ANONYMOUS_VARIABLE)) {
-            return new ArgumentNode(argument);
+            return Optional.of(new ArgumentNode(argument));
         } else if (argument.is(Token.ATOM, Token.QUOTED_ATOM)) {
             var lparent = this.readNextToken();
             if (lparent.is(Token.OPEN_PARENTHESIS)) {
                 // compound - pushback 2
                 this.pushBackToken(lparent);
                 this.pushBackToken(argument);
-                return new ArgumentNode(this.parseCompoundTerm());
+                return Optional.of(new ArgumentNode(this.parseCompoundTerm()));
             } else {
                 this.pushBackToken(lparent);
             }
-            return new ArgumentNode(argument);
+            return Optional.of(new ArgumentNode(argument));
         } else if (argument.is(Token.nil)) {
-            return NIL_ARGUMENT;
+            return Optional.of(NIL_ARGUMENT);
         } else if (argument.is(Token.ARRAY_OF_CHARACTERS)) {
             this.pushBackToken(argument);
-            return new ArgumentNode(this.parseListNotationFromString());
+            return Optional.of(new ArgumentNode(this.parseListNotationFromString()));
         } else if (argument.is(Token.OPEN_LIST)) {
             this.pushBackToken(argument);
             var compound = this.parseListNotation();
-            return new ArgumentNode(compound);
+            return Optional.of(new ArgumentNode(compound));
         } else if (argument.toValueString().equals("+") || argument.toValueString().equals("-")) {
             // check if next is a
             //      number or (....)
             var arg = this.parseArgument();
-            return new ArgumentNode(new CompoundTermNode(argument, Collections.singletonList(arg)));
+            return Optional.of(new ArgumentNode(new CompoundTermNode(argument, Collections.singletonList(arg))));
         }
         throw new IOException("Illegal token found for argument node '"+argument+"'");
     }
