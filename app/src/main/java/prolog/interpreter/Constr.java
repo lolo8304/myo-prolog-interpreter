@@ -111,26 +111,15 @@ public class Constr implements  Term {
         for (int i = 0; i < xs.size(); i++) {
             var x = xs.get(i);
             var y = ys.get(i);
-            var optionalS = x.unify(y, s);
-            if (optionalS.isEmpty()) return Optional.empty();
-            newSubst = optionalS.get();
+            var optionalS = x.unify(y, newSubst);
+            if (optionalS.isEmpty()) {
+                optionalS = y.unify(x, newSubst);
+            }
+            if (optionalS.isPresent()) {
+                newSubst = optionalS.get();
+            }
         }
         return Optional.of(newSubst);
-    }
-
-    public Term lhs() {
-        if (this.terms.isEmpty()) {
-            return this;
-        } else {
-            return this.terms.get(0);
-        }
-    }
-    public Constr rhs() {
-        if (this.terms.size() > 1) {
-            return new Constr(this.atom, this.terms.subList(1, this.terms.size()));
-        } else {
-            return new Constr(this.atom, EMPTY_TERMS);
-        }
     }
 
     @Override

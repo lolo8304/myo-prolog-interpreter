@@ -1,10 +1,8 @@
 package prolog.nodes;
 
-import prolog.TokenValue;
 import prolog.interpreter.*;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -13,15 +11,6 @@ public class FactNode extends AbstractNode implements Term {
 
     public FactNode(PredicateNode predicate) {
         this.predicate = predicate;
-    }
-    @Override
-    public void execute(PrologRuntime runtime) throws IOException {
-        if (this.isGround()) {
-            runtime.top().memory.addFact(this);
-        }
-        if (runtime.inQueryMode()) {
-            runtime.findSolution(this);
-        }
     }
 
     @Override
@@ -36,6 +25,8 @@ public class FactNode extends AbstractNode implements Term {
         if (!(o instanceof FactNode factNode)) return false;
         return Objects.equals(this.key(), factNode.key());
     }
+
+
 
     public String predicateIndicator() {
         return this.predicate.predicateIndicator();

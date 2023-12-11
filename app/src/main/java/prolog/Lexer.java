@@ -28,9 +28,9 @@ public class Lexer {
         ESCAPED0.put("\\\\", '\\');
         ESCAPED0.put("\\\"", '\"');
         ESCAPED0.put("\\%", '%');
-        ESCAPED0.put("\\n", '\n');
-        ESCAPED0.put("\\r", '\r');
-        ESCAPED0.put("\\t", '\t');
+        //ESCAPED0.put("\\n", '\n');
+        //ESCAPED0.put("\\r", '\r');
+        //ESCAPED0.put("\\t", '\t');
     }
 
 
@@ -484,22 +484,35 @@ public class Lexer {
         }
     }
 
+    private boolean isNotAllowedQuotedChars(Character quotes, Character ch) {
+        if (quotes.equals('\'')) {
+            return ch == '\t' || ch == '\r' || ch == '\n';
+        } else {
+            return false;
+        }
+    }
 
     private String readQuotedAtom(Character quotes) throws IOException {
         var str = new StringBuilder();
         // don't add quotes
         var ch = this.peekNext();
+        var lastWasEscaped = false;
         while (ch != null && !ch.equals(quotes)) {
             if (ch == '\\') { // is escaped
+                lastWasEscaped = true;
                 str.append(ch);
                 readNext();
                 ch = peekNext();
                 if (this.isControlCharacter(ch)) {
+                    lastWasEscaped = false;
                     str.append(ch);
                     readNext();
                     ch = this.peekNext();
                 }
+            } else if (lastWasEscaped && this.isNotAllowedQuotedChars(quotes, ch)) {
+                throw new IOException("Illegal special character ='"+ch+"'");
             } else {
+                lastWasEscaped = false;
                 str.append(ch);
                 readNext();
                 ch = this.peekNext();

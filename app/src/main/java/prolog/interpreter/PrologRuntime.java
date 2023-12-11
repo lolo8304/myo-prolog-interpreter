@@ -1,7 +1,6 @@
 package prolog.interpreter;
 
-import prolog.Prolog;
-import prolog.nodes.AbstractNode;
+import prolog.nodes.ClauseNode;
 import prolog.nodes.FactNode;
 import prolog.nodes.ProgramNode;
 
@@ -13,7 +12,7 @@ import java.util.stream.Stream;
 public class PrologRuntime {
 
     public Context top;
-    private boolean inQueryMode = false;
+    private boolean inConsultingMode = false;
 
     public PrologRuntime() {
         this.top = new Context(this);
@@ -23,11 +22,11 @@ public class PrologRuntime {
         program.execute(this);
     }
     public void consult(ProgramNode program) throws IOException {
-        this.inQueryMode = false;
+        this.inConsultingMode = true;
         try {
             program.execute(this);
         } finally {
-            this.inQueryMode = true;
+            this.inConsultingMode = false;
         }
     }
 
@@ -35,11 +34,11 @@ public class PrologRuntime {
         return this.top.memory;
     }
 
-    public void findSolution(AbstractNode fact) throws IOException {
+    public void findSolution(ClauseNode query) throws IOException {
         try (var context = this.start())  {
 
             var clauses = this.top().memory.clauses();
-            var s = solve(fact, clauses);
+            var s = solve(query, clauses);
             s.forEachOrdered(solution -> {
                 System.out.println("solution: "+solution.toString());
             });
@@ -50,20 +49,17 @@ public class PrologRuntime {
 
     }
 
-    private Stream<Subst> solve(AbstractNode query, Stream<Term> clauses) {
-        var asTerm = query.asTerm();
-        if (asTerm instanceof Var) {
-            return Stream.empty();
-        }
-        return this.solve(query.asConstr().get(), clauses);
+    private Stream<Subst> solve(ClauseNode query, Stream<Terms> clauses) {
+        var asTerms = query.asTerms();
+        return this.solve(asTerms, clauses);
     }
 
-    private Stream<Subst> solve(Constr query, Stream<Term> clauses) {
+    private Stream<Subst> solve(Terms query, Stream<Terms> clauses) {
         return this.solve1(query, new Subst(), clauses);
     }
 
-    private Stream<Subst> solve1(Constr query, Subst s, Stream<Term> clauses) {
-        if (query.terms.isEmpty()) {
+    private Stream<Subst> solve1(Terms query, Subst s, Stream<Terms> clauses) {
+        if (query.isEmpty()) {
             return Stream.of(s);
         } else {
             var q = query.lhs();
@@ -81,9 +77,9 @@ public class PrologRuntime {
     }
 
 
-    private Stream<Subst> tryClause(Term clause, Term q, Subst s) {
-        var s1 = q.unify(clause.asConstr().get().lhs(), s);
-        return s1.map(bindings -> this.solve1(clause.asConstr().get().rhs(), bindings, this.top().memory.clauses())).orElseGet(Stream::empty);
+    private Stream<Subst> tryClause(Terms clause, Term q, Subst s) {
+        var s1 = q.unify(clause.lhs(), s);
+        return s1.map(bindings -> this.solve1(clause.rhs(), bindings, this.top().memory.clauses())).orElseGet(Stream::empty);
     }
 
 //    private void solve() {
@@ -131,7 +127,7 @@ public class PrologRuntime {
     }
 
 
-    public boolean inQueryMode() {
-        return this.inQueryMode;
+    public boolean inConsultingMode() {
+        return this.inConsultingMode;
     }
 }

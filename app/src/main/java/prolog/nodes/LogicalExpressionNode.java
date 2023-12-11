@@ -12,4 +12,9 @@ public class LogicalExpressionNode extends ConditionNode {
     public LogicalExpressionNode(List<ArgumentNode> terms, List<TokenValue> conditions) {
         super(terms, conditions);
     }
+
+    public Terms asTerms() {
+        return new Terms(this.asConstr().get().terms);
+    };
+
 }

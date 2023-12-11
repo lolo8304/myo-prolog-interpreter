@@ -23,10 +23,6 @@ public class ConditionNode extends AbstractNode implements Term {
         this.terms = terms;
         this.conditions = conditions;
     }
-    @Override
-    public void execute(PrologRuntime runtime) {
-
-    }
 
     @Override
     public StringBuilder append(StringBuilder builder) {

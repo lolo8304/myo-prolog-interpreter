@@ -76,7 +76,7 @@ public class Parser {
             if (unify.is(Token.UNIFY)) {
                 var body = this.parseExpression();
                 if (body.isEmpty()) {
-                    throw new IOException("Body expcted but EOF");
+                    throw new IOException("Body expected but EOF");
                 }
                 return Optional.of(new ClauseNode(new RuleNode(fact.predicate, body.get())));
             } else {

@@ -3,10 +3,7 @@ package prolog.interpreter;
 import prolog.nodes.AbstractNode;
 import prolog.nodes.Node;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Terms extends ArrayList<Term> {
     public final static Terms EMPTY_TERMS = new Terms();
@@ -16,6 +13,10 @@ public class Terms extends ArrayList<Term> {
     }
 
     public Terms() {
+    }
+    public Terms(Term... terms) {
+        super();
+        this.addAll(Arrays.stream(terms).toList());
     }
 
     public Terms(Collection<? extends Term> c) {
@@ -36,5 +37,12 @@ public class Terms extends ArrayList<Term> {
             builder = term.append(builder);
         }
         return builder.toString();
+    }
+
+    public Term lhs() {
+        return this.get(0);
+    }
+    public Terms rhs() {
+        return new Terms(this.subList(1,this.size()));
     }
 }

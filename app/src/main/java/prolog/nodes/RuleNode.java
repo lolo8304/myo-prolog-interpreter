@@ -19,29 +19,12 @@ public class RuleNode extends AbstractNode implements Term {
         this.head = head;
         this.body = body;
     }
-    @Override
-    public void execute(PrologRuntime runtime) throws IOException {
-        if (this.isGround()) {
-            runtime.top().memory.addRule(this);
-        }
-        if (runtime.inQueryMode()) {
-            runtime.findSolution(this);
-        }
-
-
-        runtime.memory().addRule(this);
-        if (this.isGround()) {
-            if (Prolog.verbose()) {
-                System.out.println("true");
-            }
-        }
-
-    }
 
     @Override
     public StringBuilder append(StringBuilder builder) {
         return this.body.append(this.head.append(builder).append(":-"));
     }
+
 
     public String key() {
         return this.head.key();
@@ -107,11 +90,8 @@ public class RuleNode extends AbstractNode implements Term {
         return Optional.empty();
     }
 
-    public PredicateNode lhs() {
-        return this.head;
-    }
-
-    public List<Term> rhs() {
-        return this.body.rhs();
+    @Override
+    public Terms asTerms() {
+        return new Terms(this.head, this.body);
     }
 }

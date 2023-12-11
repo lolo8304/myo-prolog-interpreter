@@ -26,7 +26,7 @@ public class ProgramNode extends AbstractNode {
         this.clauses.add(clause);
         return this;
     }
-    @Override
+
     public void execute(PrologRuntime runtime) throws IOException {
         for (ClauseNode x : this.clauses) {
             x.execute(runtime);

@@ -44,4 +44,8 @@ public abstract class AbstractNode implements Node, TermStatus {
         return this.asConstr().get();
     };
 
+    public Terms asTerms() {
+        return new Terms(this.asTerm());
+    };
+
 }

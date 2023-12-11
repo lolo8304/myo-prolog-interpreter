@@ -55,4 +55,20 @@ public class TermTest  extends Tester {
 
     }
 
+    @Test
+    public void execute_paths_found() throws IOException, URISyntaxException {
+        // Arrange
+        Prolog.VERBOSE_LEVEL = 1;
+        var runtime = new PrologRuntime();
+
+        ReadReader("path.pl");
+        var facts = this.consult(runtime, reader);
+
+        var queryString = "path(a,c,X).";
+        var query = this.parse(queryString);
+
+        runtime.execute(query);
+
+    }
+
 }

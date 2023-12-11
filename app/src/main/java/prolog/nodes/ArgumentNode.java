@@ -57,10 +57,6 @@ public class ArgumentNode extends AbstractNode implements Term  {
         return this.compoundTerm.key();
     }
 
-    @Override
-    public void execute(PrologRuntime runtime) {
-
-    }
 
     @Override
     public StringBuilder append(StringBuilder builder) {

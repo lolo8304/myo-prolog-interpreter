@@ -47,7 +47,7 @@ public class Var implements Term {
             if (this.name().equals(yAsVar.get().name())) {
                 return Optional.of(s);
             } else {
-                return y.unify(this,s);
+                return Optional.empty();
             }
         } else {
             var termX1 = s.lookup(this.name());

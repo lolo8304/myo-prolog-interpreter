@@ -55,10 +55,6 @@ public abstract class CompoundNode extends AbstractNode implements Term {
     public int hashCode() {
         return Objects.hash(this.key());
     }
-    @Override
-    public void execute(PrologRuntime runtime) {
-
-    }
 
     @Override
     public boolean isGround() {

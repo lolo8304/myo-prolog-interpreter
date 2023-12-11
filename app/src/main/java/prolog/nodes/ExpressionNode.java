@@ -28,9 +28,6 @@ public class ExpressionNode extends AbstractNode implements Term {
         this.conditionNode = null;
         this.expression = logicalExpression;
     }
-    @Override
-    public void execute(PrologRuntime runtime) {
-    }
 
     private Node node() {
         return this.argument != null ? argument : this.conditionNode != null ? this.conditionNode : this.expression;

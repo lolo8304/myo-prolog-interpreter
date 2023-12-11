@@ -35,8 +35,21 @@ public abstract class Tester {
     protected ProgramNode parse(String line) throws IOException {
         return this.parser(line).parse().get();
     }
+    protected ProgramNode parse(Reader reader) throws IOException {
+        return this.parser(reader).parse().get();
+    }
     protected Parser parser(String line) throws IOException {
         var lexer = new Lexer(line);
         return new Parser(lexer);
+    }
+    protected Parser parser(Reader reader) throws IOException {
+        var lexer = new Lexer(reader);
+        return new Parser(lexer);
+    }
+
+    protected ProgramNode consult(PrologRuntime runtime, BufferedReader reader) throws IOException {
+        var facts = this.parse(reader);
+        runtime.consult(facts);
+        return facts;
     }
 }

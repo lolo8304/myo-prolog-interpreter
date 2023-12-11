@@ -2,10 +2,7 @@ package prolog.interpreter;
 
 import prolog.Prolog;
 import prolog.TokenValue;
-import prolog.nodes.ClauseNode;
-import prolog.nodes.CompoundNode;
-import prolog.nodes.FactNode;
-import prolog.nodes.RuleNode;
+import prolog.nodes.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -96,9 +93,9 @@ public class Memory {
         return this.facts.entrySet().stream();
     }
 
-    public Stream<Term> clauses() {
-        Stream<Term> fs = this.facts.values().stream().flatMap(Collection::stream);
-        Stream<Term> rs = this.rules.values().stream().flatMap(Collection::stream);
+    public Stream<Terms> clauses() {
+        Stream<Terms> fs = this.facts.values().stream().flatMap(Collection::stream).map(AbstractNode::asTerms);
+        Stream<Terms> rs = this.rules.values().stream().flatMap(Collection::stream).map(AbstractNode::asTerms);
         return Stream.concat(fs, rs);
     }
 

@@ -1,6 +1,6 @@
 package prolog.nodes;
 
-import prolog.TokenValue;
+import prolog.Prolog;
 import prolog.interpreter.Constr;
 import prolog.interpreter.FreeVars;
 import prolog.interpreter.PrologRuntime;
@@ -33,16 +33,18 @@ public class ClauseNode extends AbstractNode {
         this.query = query;
     }
 
-    @Override
     public void execute(PrologRuntime runtime) throws IOException {
-        if (this.fact != null) {
-            this.fact.execute(runtime);
+        if (runtime.inConsultingMode()) {
+            if (this.rule != null) runtime.top().memory.addRule(this.rule);
+            if (this.fact != null) runtime.top().memory.addFact(this.fact);
         }
-        if (this.rule != null) {
-            this.rule.execute(runtime);
+        if (this.fact != null || this.query != null) {
+            runtime.findSolution(this);
         }
-        if (this.query != null) {
-            this.query.execute(runtime);
+        if (this.isGround()) {
+            if (Prolog.verbose()) {
+                System.out.println("true");
+            }
         }
     }
 
@@ -87,13 +89,6 @@ public class ClauseNode extends AbstractNode {
     @Override
     public Optional<Constr> asConstr() {
         return this.fact != null ? this.fact.asConstr() : this.rule != null ? this.rule.asConstr() : this.query.asConstr();
-    }
-
-    public Term lhs() {
-        return this.fact != null ? this.fact.predicate : this.rule != null ? this.rule.lhs() : this.query;
-    }
-    public List<Term> rhs() {
-        return this.fact != null ? Term.EMPTY_LIST : this.rule != null ? this.rule.rhs() : Term.EMPTY_LIST;
     }
 
 

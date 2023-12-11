@@ -31,10 +31,6 @@ public class PredicateNode extends AbstractNode implements Term {
         this._key = null;
         return this;
     }
-    @Override
-    public void execute(PrologRuntime runtime) {
-
-    }
 
     @Override
     public StringBuilder append(StringBuilder builder) {
