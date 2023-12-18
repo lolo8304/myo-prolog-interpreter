@@ -65,7 +65,7 @@ public class PredicateNode extends AbstractNode implements Term {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if ((o instanceof String str)) return Objects.equals(this.key(), str);;
+        if ((o instanceof String str)) return Objects.equals(this.key(), str);
         if (!(o instanceof PredicateNode that)) return false;
         return Objects.equals(this.key(), that.key());
     }

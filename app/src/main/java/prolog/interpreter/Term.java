@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface Term {
-    public List<Term> EMPTY_LIST = new ArrayList<>();
+    List<Term> EMPTY_LIST = new ArrayList<>();
 
     StringBuilder append(StringBuilder builder);
 

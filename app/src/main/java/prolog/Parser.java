@@ -10,8 +10,8 @@ import static prolog.nodes.ArgumentNode.NIL_ARGUMENT;
 public class Parser {
 
     private final Lexer lexer;
-    private Deque<TokenValue> queue;
-    private List<TokenValue> comments;
+    private final Deque<TokenValue> queue;
+    private final List<TokenValue> comments;
 
     public Parser(Lexer lexer) { 
         this.lexer = lexer;

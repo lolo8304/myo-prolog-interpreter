@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Terms extends ArrayList<Term> {
     public final static Terms EMPTY_TERMS = new Terms();
-    private FreeVars freevars = new FreeVars();
+    private final FreeVars freevars = new FreeVars();
 
     public Terms(int initialCapacity) {
         super(initialCapacity);

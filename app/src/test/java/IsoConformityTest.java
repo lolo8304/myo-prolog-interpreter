@@ -38,7 +38,7 @@ public class IsoConformityTest extends Tester {
             System.out.println("Parse: " + adaptedQuery);
             var program = parser.parse();
             if (this.shouldBeError(codex)) {
-                assertFalse(true, "Error should occur on "+query+" but was parsed");
+                fail("Error should occur on " + query + " but was parsed");
             }
 
             //Action

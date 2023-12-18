@@ -36,7 +36,7 @@ public class ProgramNode extends AbstractNode {
     @Override
     public StringBuilder append(StringBuilder builder) {
         for (int i = 0; i < this.clauses.size(); i++) {
-            this.clauses.get(i).append(builder);;
+            this.clauses.get(i).append(builder);
             builder.append(".");
         }
         return builder;

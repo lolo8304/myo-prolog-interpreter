@@ -16,7 +16,7 @@ public class Lexer {
 
     private static final String validNumberRegexp = "^-?(?:0\\d*|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$";
 
-    private static Map<String, Character> ESCAPED0;
+    private static final Map<String, Character> ESCAPED0;
 
     static {
         // escaped: \' --> '     '' --> ''   \\ --> \   \" --> "   \% ---> %   \\n --> \n  \\t -> \t   \\r ---> \r
@@ -252,7 +252,7 @@ public class Lexer {
                 var code = this.convertUnicodeEscape("\\u" + codeString);
                 return new TokenValue(Token.NUMBER, code);
             } else {
-                var lookup = "\\" + String.valueOf(ch);
+                var lookup = "\\" + ch;
                 var escapeChar = ESCAPED0.get(lookup);
                 if (escapeChar != null) {
                     this.readNext();
@@ -264,7 +264,7 @@ public class Lexer {
         } else if (ch == '\'') {
             this.readNext();
             ch = this.peekNext();
-            var lookup = "\'" + ch;
+            var lookup = "'" + ch;
             var escapeChar = ESCAPED0.get(lookup);
             if (escapeChar != null) {
                 this.readNext();
