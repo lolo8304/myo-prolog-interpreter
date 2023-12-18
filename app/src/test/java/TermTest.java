@@ -55,7 +55,7 @@ public class TermTest  extends Tester {
 
     }
 
-    @Test
+    @Test()
     public void execute_paths_found() throws IOException, URISyntaxException {
         // Arrange
         Prolog.VERBOSE_LEVEL = 1;
@@ -68,6 +68,33 @@ public class TermTest  extends Tester {
         var query = this.parse(queryString);
 
         runtime.execute(query);
+
+    }
+
+    @Test()
+    public void asTerms_rule_found() throws IOException, URISyntaxException {
+        // Arrange
+        Prolog.VERBOSE_LEVEL = 1;
+
+        var line ="path_helper(X, Y, f([Z|X])) :- successor(X, Z), path_helper(Z, Y, f(f(f(Path))) ).";
+        var program = this.parse(line);
+        var rule = program.clauses.get(0);
+
+        // Action
+        var terms = rule.asTerms();
+        var lhs = terms.lhs();
+        var rhs = terms.rhs();
+
+        // Assertions
+        // X Y Z Path
+        assertEquals(4, terms.freevars().size());
+        assertEquals("X", terms.freevars().get(0).toValueString());
+        assertEquals("Y", terms.freevars().get(1).toValueString());
+        assertEquals("Z", terms.freevars().get(2).toValueString());
+        assertEquals("Path", terms.freevars().get(3).toValueString());
+
+        assertEquals(3, lhs.freevars().size());
+        assertEquals(4, rhs.freevars().size());
 
     }
 

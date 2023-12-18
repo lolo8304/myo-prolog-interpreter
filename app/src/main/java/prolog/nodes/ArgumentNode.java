@@ -126,14 +126,16 @@ public class ArgumentNode extends AbstractNode implements Term  {
 
     @Override
     public Optional<Subst> pmatch(Term term, Subst s) {
-        if (this.atom != null || this.number != null) return Optional.empty();
+        if (this.atom != null) return this.atom.pmatch(term, s);
+        if (this.number != null) return this.number.pmatch(term,s);
         if (this.compoundTerm != null) return this.compoundTerm.pmatch(term, s);
         return this.variable.pmatch(term, s);
     }
 
     @Override
     public Optional<Subst> unify(Term y, Subst s) {
-        if (this.atom != null || this.number != null) return Optional.empty();
+        if (this.atom != null) return this.atom.unify(y, s);
+        if (this.number != null) return this.number.unify(y, s);
         if (this.compoundTerm != null) return this.compoundTerm.unify(y, s);
         return this.variable.unify(y, s);
     }
@@ -157,4 +159,16 @@ public class ArgumentNode extends AbstractNode implements Term  {
         return new PredicateNode(this.number);
     }
 
+    @Override
+    public Term asTerm() {
+        if (this.compoundTerm != null) return this.compoundTerm.asConstr().get();
+        if (this.atom != null) return this.atom;
+        if (this.variable != null) return new Var(this.variable);
+        return this.number;
+    }
+
+    @Override
+    public Terms asTerms() {
+        return this.asPredicate().asTerms();
+    }
 }

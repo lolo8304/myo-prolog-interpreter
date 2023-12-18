@@ -1,0 +1,69 @@
+function prologInterpreter(query, database):
+    return solve(query, initial_empty_substitution, database)
+
+function solve(query, substitution, database):
+    if query is empty:
+        return substitution  // A solution is found
+    else:
+        first_goal = first element of query
+        remaining_goals = rest of the query
+
+        for each clause in database:
+            clause_head = applySubstitution(head of clause, substitution)
+            if pmatch([first_goal], [clause_head], substitution):
+                new_substitution = unify(first_goal, clause_head, substitution)
+
+                if new_substitution is not failure:
+                    // Construct new query with the body of the clause and remaining goals
+                    clause_body = applySubstitution(body of clause, new_substitution)
+                    new_query = concatenate(clause_body, remaining_goals)
+
+                    // Recursively solve the new query
+                    result = solve(new_query, new_substitution, database)
+
+                    if result is not failure:
+                        return result
+
+        return failure  // No solution found
+
+function pmatch(patterns, terms, substitution):
+    if length of patterns is not equal to length of terms:
+        return failure
+    for each pair (pattern, term) from (patterns, terms):
+        if not unify(pattern, term, substitution):
+            return failure
+    return true
+
+function unify(term1, term2, substitution):
+    if both terms are constants or same variable:
+        return substitution if they are equal, else failure
+    else if one is a variable and the other is not:
+        if variable is not in substitution:
+            add variable->other term in substitution
+            return new substitution
+        else:
+            return unify(value of variable in substitution, other term, substitution)
+    else if both are lists or compound terms:
+        if both are empty lists:
+            return substitution
+        else if both have head and tail:
+            new_subst = unify(head of term1, head of term2, substitution)
+            if new_subst is not failure:
+                return unify(tail of term1, tail of term2, new_subst)
+            else:
+                return failure
+        else:
+            return failure
+    else:
+        return failure
+
+function applySubstitution(term, substitution):
+    if term is a variable present in substitution:
+        return substitution[term]
+    else if term is a compound term:
+        return compound term with applySubstitution applied to each argument
+    else:
+        return term  // unchanged if it's a constant or not in substitution
+
+function concatenate(list1, list2):
+    return concatenated list of list1 and list2

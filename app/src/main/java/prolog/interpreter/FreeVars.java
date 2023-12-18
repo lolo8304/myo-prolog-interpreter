@@ -42,4 +42,11 @@ public class FreeVars extends ArrayList<TokenValue> {
     public Subst asSubs() {
         return new Subst(this.stream().map(TokenValue::asBinding).toList());
     }
+
+    public FreeVars concat(FreeVars freeVars) {
+        var copy = new FreeVars(this);
+        copy.addAll(freeVars);
+        return copy;
+    }
+
 }

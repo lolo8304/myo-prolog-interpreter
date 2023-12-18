@@ -1,10 +1,7 @@
 package prolog.nodes;
 
 import prolog.Prolog;
-import prolog.interpreter.Constr;
-import prolog.interpreter.FreeVars;
-import prolog.interpreter.PrologRuntime;
-import prolog.interpreter.Term;
+import prolog.interpreter.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -37,13 +34,17 @@ public class ClauseNode extends AbstractNode {
         if (runtime.inConsultingMode()) {
             if (this.rule != null) runtime.top().memory.addRule(this.rule);
             if (this.fact != null) runtime.top().memory.addFact(this.fact);
-        }
-        if (this.fact != null || this.query != null) {
-            runtime.findSolution(this);
-        }
-        if (this.isGround()) {
-            if (Prolog.verbose()) {
-                System.out.println("true");
+        } else {
+            if (this.fact != null || this.query != null) {
+                if (Prolog.verbose()) {
+                    System.out.println("execute query: "+this);
+                }
+                runtime.findSolution(this);
+            }
+            if (this.isGround()) {
+                if (Prolog.verbose()) {
+                    System.out.println("true");
+                }
             }
         }
     }
@@ -91,5 +92,13 @@ public class ClauseNode extends AbstractNode {
         return this.fact != null ? this.fact.asConstr() : this.rule != null ? this.rule.asConstr() : this.query.asConstr();
     }
 
+    @Override
+    public Term asTerm() {
+        return this.fact != null ? this.fact.asTerm() : this.rule != null ? this.rule.asTerm() : this.query.asTerm();
+    }
 
+    @Override
+    public Terms asTerms() {
+        return this.fact != null ? this.fact.asTerms() : this.rule != null ? this.rule.asTerms() : this.query.asTerms();
+    }
 }

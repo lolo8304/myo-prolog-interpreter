@@ -119,7 +119,7 @@ public abstract class CompoundNode extends AbstractNode implements Term {
 
     @Override
     public Term map(Subst s) {
-        return new Constr(this.functor, this.arguments().stream().map(x -> x.map(s)).toList());
+        return this.asConstr().get().map(s);
     }
 
     @Override
@@ -147,4 +147,6 @@ public abstract class CompoundNode extends AbstractNode implements Term {
     public PredicateNode asPredicate() {
         return new PredicateNode(this.functor, this.arguments());
     }
+
+
 }

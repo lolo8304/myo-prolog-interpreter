@@ -62,7 +62,16 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public Term map(Subst s) {
-        return s.lookup(this.toValueString()).map(value -> value.map(s)).orElse(this);
+        var b = s.lookup(this.toValueString());
+        if (b.isPresent()) {
+            if (this.equals(b.get())) {
+                return this;
+            } else {
+                return b.get().map(s);
+            }
+        } else {
+            return this;
+        }
     }
 
     @Override
@@ -72,11 +81,31 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public Optional<Subst> unify(Term y, Subst s) {
-        return this.asVar().flatMap(var -> var.unify(y, s));
+        var xVar = this.asVar();
+        if (xVar.isPresent()) {
+            return xVar.flatMap(var -> var.unify(y, s));
+        } else {
+            //this not Var, y = ?
+            var yAsVar = y.asVar();
+            if (yAsVar.isPresent()) {
+                // this not, y = var
+                var termY1 = s.lookup(yAsVar.get().name());
+                if (termY1.isPresent()) {
+                    return termY1.get().unify(this, s);
+                } else {
+                    return Optional.of(new Subst(new Binding(yAsVar.get().name(), this), s));
+                }
+            } else {
+                // this not var, y not var = both constantsm, check if the same
+                return y.asConstr().flatMap(yAsConstr ->
+                    this.toValueString().equals(yAsConstr.atom.toValueString()) ? Optional.of(s) : Optional.empty());
+            }
+        }
     }
 
     @Override
     public Optional<Constr> asConstr() {
+        if (this.is(Token.nil)) return Optional.of(new ListConstr(this));
         return this.is(Token.VARIABLE) ?
                 Optional.empty()
                 :
@@ -101,6 +130,7 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public Optional<Var> asVar() {
+        if (this.is(Token.nil)) return Optional.empty();
         return this.is(Token.VARIABLE) ?
                 Optional.of(new Var(this))
                 :

@@ -72,7 +72,7 @@ public class Memory {
         }
         set.add(rule);
         if (Prolog.verbose()) {
-            System.out.println("Memory: add rule = "+rule.key());
+            System.out.println("Memory: add rule = "+rule);
         }
         return this;
     }

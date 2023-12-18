@@ -41,7 +41,8 @@ public abstract class AbstractNode implements Node, TermStatus {
     public Term asTerm() {
         var asVar = this.asVars();
         if (asVar.isPresent()) return asVar.get();
-        return this.asConstr().get();
+        var constr = this.asConstr();
+        return constr.get();
     };
 
     public Terms asTerms() {

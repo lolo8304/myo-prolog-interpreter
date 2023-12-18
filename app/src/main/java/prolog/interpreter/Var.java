@@ -50,6 +50,7 @@ public class Var implements Term {
                 return Optional.empty();
             }
         } else {
+            // this = var, x = not
             var termX1 = s.lookup(this.name());
             if (termX1.isPresent()) {
                 return termX1.get().unify(y, s);

@@ -2,8 +2,7 @@ package prolog.nodes;
 
 import prolog.Token;
 import prolog.TokenValue;
-import prolog.interpreter.Subst;
-import prolog.interpreter.Term;
+import prolog.interpreter.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -87,5 +86,15 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
                 throw new IllegalArgumentException("cannot iterate over last tail in list");
             }
         }
+    }
+
+    @Override
+    public Optional<Constr> asConstr() {
+        return Optional.of(new ListConstr(this));
+    }
+
+    @Override
+    public Terms asTerms() {
+        return new Terms(this.arguments().stream().map(ArgumentNode::asTerm).toList());
     }
 }

@@ -1,12 +1,15 @@
 package prolog.interpreter;
 
+import prolog.Prolog;
 import prolog.nodes.ClauseNode;
-import prolog.nodes.FactNode;
 import prolog.nodes.ProgramNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PrologRuntime {
@@ -37,9 +40,9 @@ public class PrologRuntime {
     public void findSolution(ClauseNode query) throws IOException {
         try (var context = this.start())  {
 
-            var clauses = this.top().memory.clauses();
+            var clauses = this.top().memory.clauses().collect(Collectors.toList());
             var s = solve(query, clauses);
-            s.forEachOrdered(solution -> {
+            s.forEach(solution -> {
                 System.out.println("solution: "+solution.toString());
             });
 
@@ -49,61 +52,52 @@ public class PrologRuntime {
 
     }
 
-    private Stream<Subst> solve(ClauseNode query, Stream<Terms> clauses) {
+    private List<Subst> solve(ClauseNode query, List<Terms> clauses) {
         var asTerms = query.asTerms();
         return this.solve(asTerms, clauses);
     }
 
-    private Stream<Subst> solve(Terms query, Stream<Terms> clauses) {
+    private List<Subst> solve(Terms query, List<Terms> clauses) {
         return this.solve1(query, new Subst(), clauses);
     }
 
-    private Stream<Subst> solve1(Terms query, Subst s, Stream<Terms> clauses) {
+    private List<Subst> solve1(Terms query, Subst s, List<Terms> clauses) {
         if (query.isEmpty()) {
-            return Stream.of(s);
+            return new ArrayList<>(Collections.singletonList(s));
         } else {
-            var q = query.lhs();
-            var query1 = query.rhs();
-            final var sresult = new ArrayList<Stream<Subst>>();
-            clauses.forEachOrdered(clause -> {
-                var s1 = tryClause(clause, q, s);
-                s1.forEachOrdered(eachS1 -> {
-                    var s2 = solve1(query1, eachS1, clauses);
-                    sresult.add(s2);
-                });
+            final var sresult = new ArrayList<Subst>();
+            clauses.forEach(clause -> {
+                Terms newClause = clause.newInstance();
+                var s1 = tryClause(newClause, query, s, clauses);
+                if (!s1.isEmpty()) {
+                    sresult.addAll(s1);
+                }
             });
-            return sresult.isEmpty() ? Stream.empty() : sresult.stream().flatMap(x -> x);
+            return sresult;
         }
     }
 
 
-    private Stream<Subst> tryClause(Terms clause, Term q, Subst s) {
-        var s1 = q.unify(clause.lhs(), s);
-        return s1.map(bindings -> this.solve1(clause.rhs(), bindings, this.top().memory.clauses())).orElseGet(Stream::empty);
-    }
+    private List<Subst> tryClause(Terms clause, Terms query, Subst s, List<Terms> clauses) {
+        var clauseHead = clause.lhs().map(s);
+        var queryHead = query.lhs();
+        var queryTail = query.rhs();
 
-//    private void solve() {
-//        if (query.isGround()) {
-//            var facts = ;
-//            if (facts != null) {
-//                solveFacts(query, facts);
-//
-//            } else {
-//                if (Prolog.verbose()) System.out.println("Fact wrong: "+query);
-//                var binding = new Binding(TokenValue.FALSE.toValueString(), query);
-//                this.top().addSolution(binding);
-//            }
-//        }
-//    }
-
-    private static void solveFacts(FactNode query, Set<FactNode> facts) {
-        for (var fact:  facts) {
-            var s = query.freevars().asSubs();
-            var newS = query.unify(fact, s);
+        if (queryHead.pmatch(clauseHead, s).isPresent()) {
+            var newS = queryHead.unify(clauseHead, s);
             if (newS.isPresent()) {
-                var t = fact.map(newS.get());
+                if (Prolog.verbose()) {
+                    System.out.println("UNIFIED: queryHead = "+queryHead);
+                    System.out.println("        clauseHead = "+clauseHead);
+                    System.out.println("             subst = "+newS.get());
+                }
+                // Construct new query with the body of the clause and remaining goals
+                var clauseBody = clause.rhs().map(newS.get());
+                var newQuery = clauseBody.concat(queryTail);
+                return this.solve1(newQuery, newS.get(), clauses);
             }
         }
+        return new ArrayList<>();
     }
 
     public Context top() {

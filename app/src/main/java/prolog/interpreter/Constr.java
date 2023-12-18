@@ -50,8 +50,8 @@ public class Constr implements  Term {
     @Override
     public Optional<Subst> pmatch(Term term, Subst s) {
         var termAsConstr = term.asConstr();
-        if (termAsConstr.isPresent() && this.atom.equals(termAsConstr.get().atom)) {
-            return Constr.pmatch(this.terms, termAsConstr.get().terms,s);
+        if (termAsConstr.isPresent() && this.atom.equals(termAsConstr.get().atom) && this.terms.size() == termAsConstr.get().terms.size()) {
+            return Constr.unify(this.terms, termAsConstr.get().terms, s);
         } else {
             return Optional.empty();
         }
@@ -98,7 +98,7 @@ public class Constr implements  Term {
         for (int i = 0; i < patterns.size(); i++) {
             var pattern = patterns.get(i);
             var term = terms.get(i);
-            var optionalS = pattern.pmatch(term, s);
+            var optionalS = pattern.unify(term, s);
             if (optionalS.isEmpty()) return Optional.empty();
             newSubst = optionalS.get();
         }
@@ -129,7 +129,10 @@ public class Constr implements  Term {
 
     @Override
     public StringBuilder append(StringBuilder builder) {
-        builder.append(this.atom.toValueString()).append("(");
+        builder.append(this.atom.toValueString());
+        if (this.terms.size() == 0) return builder;
+
+        builder.append("(");
         var second = false;
         for (var term: this.terms) {
             if (second) {
@@ -143,5 +146,13 @@ public class Constr implements  Term {
         }
         builder.append(")");
         return builder;
+    }
+
+    public Term lhs() {
+        return this.terms.lhs();
+    }
+
+    public Terms rhs() {
+        return this.terms.rhs();
     }
 }

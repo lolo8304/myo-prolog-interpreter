@@ -129,7 +129,7 @@ public class PredicateNode extends AbstractNode implements Term {
 
     @Override
     public Optional<Constr> asConstr() {
-        return Optional.of(new Constr(this.atom, new ArrayList<Term>(this.arguments)));
+        return Optional.of(new Constr(this.atom, new ArrayList<Term>(this.arguments.stream().map(ArgumentNode::asTerm).toList())));
     }
 
     @Override
