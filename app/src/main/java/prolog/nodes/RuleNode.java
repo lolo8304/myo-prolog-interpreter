@@ -92,6 +92,6 @@ public class RuleNode extends AbstractNode implements Term {
 
     @Override
     public Terms asTerms() {
-        return new Terms(this.head, this.body);
+        return new TermsList(this.head, this.body);
     }
 }

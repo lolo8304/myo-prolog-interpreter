@@ -17,9 +17,7 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
     public List<ArgumentNode> arguments() {
         var list = new ArrayList<ArgumentNode>();
         list.add(this.head);
-        if (this.tail != ArgumentNode.NIL_ARGUMENT) {
-            list.addAll(this.tail.arguments());
-        }
+        list.addAll(this.tail.arguments());
         return list;
     }
 
@@ -95,6 +93,6 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
 
     @Override
     public Terms asTerms() {
-        return new Terms(this.arguments().stream().map(ArgumentNode::asTerm).toList());
+        return new TermsList(this.arguments().stream().map(ArgumentNode::asTerm).toList());
     }
 }

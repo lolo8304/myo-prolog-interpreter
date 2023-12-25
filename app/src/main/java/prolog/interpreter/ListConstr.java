@@ -28,13 +28,25 @@ public class ListConstr extends Constr {
 
     @Override
     public Terms rhs() {
-        return (Terms)this.terms.get(1);
+        var tail = this.terms.get(1);
+        if (tail instanceof Terms tailAsTerms) {
+            return tailAsTerms;
+        } else {
+            return new TermsList(tail);
+        }
     }
 
     @Override
     public Optional<Subst> unify(Term y, Subst s) {
         var yAsVar = y.asVar();
-        if (yAsVar.isPresent()) return yAsVar.get().unify(this, s);
+        if (yAsVar.isPresent()) {
+            var term = s.lookup(yAsVar.get().name());
+            if (term.isEmpty()) {
+                return Optional.of(new Subst(new Binding(yAsVar.get().name(), this), s));
+            } else {
+                return term.get().unify(yAsVar.get(), s);
+            }
+        }
         var yAsConstr = y.asConstr();
         if (yAsConstr.isEmpty()) return Optional.empty();
 
@@ -85,18 +97,15 @@ public class ListConstr extends Constr {
         if (this.terms.size() == 0) return builder;
 
         builder.append("[");
-        var second = false;
-        for (var term: this.terms) {
-            if (second) {
-                builder.append(" | ");
-            }
-            builder = term.append(builder);
-            if (this.freevars().stream().anyMatch(x -> x.toValueString().equals(term.toString()))) {
-                builder.append("*");
-            }
-            second=true;
-        }
-        builder.append("]");
+
+        var head = this.lhs();
+        head.append(builder);
+
+        builder.append(" | ");
+        var tail = this.rhs();
+        tail.append(builder);
+
+        builder.append(" ]");
         return builder;
     }
 }

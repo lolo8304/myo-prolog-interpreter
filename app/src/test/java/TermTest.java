@@ -48,7 +48,7 @@ public class TermTest  extends Tester {
         var line = "child(silvan, lorenz). child(yannick, lorenz). parent(X,Y) :- child(Y, X).";
         var facts = this.consult(runtime, line);
 
-        var queryString = "parent(X,Y).";
+        var queryString = "parent(A,B).";
         var query = this.parse(queryString);
 
         runtime.execute(query);
@@ -64,7 +64,7 @@ public class TermTest  extends Tester {
         ReadReader("path.pl");
         var facts = this.consult(runtime, reader);
 
-        var queryString = "path(a,c,X).";
+        var queryString = "path(a,c,A).";
         var query = this.parse(queryString);
 
         runtime.execute(query);

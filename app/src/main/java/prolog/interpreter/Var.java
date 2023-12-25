@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 public class Var implements Term {
 
 
-    private final TokenValue atom;
+    public final TokenValue atom;
     private final FreeVars freevars;
 
     public Var(TokenValue atom) {

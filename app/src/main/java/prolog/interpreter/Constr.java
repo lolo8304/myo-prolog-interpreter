@@ -6,7 +6,6 @@ import prolog.nodes.PredicateNode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class Constr implements  Term {
 
@@ -17,7 +16,7 @@ public class Constr implements  Term {
     public final Terms terms;
 
     public Constr(TokenValue atom, List<Term> terms) {
-        this(atom, new Terms(terms));
+        this(atom, new TermsList(terms));
     }
 
     public Constr(TokenValue atom, Terms terms) {
@@ -33,7 +32,7 @@ public class Constr implements  Term {
 
     public Constr(PredicateNode predicate) {
         this.atom = predicate.atom;
-        this.terms = new Terms(predicate.arguments);
+        this.terms = new TermsList(predicate.arguments);
         this.freevars = new FreeVars(predicate.arguments.stream().flatMap(x -> x.freevars().stream()).toList());
     }
 
@@ -105,7 +104,7 @@ public class Constr implements  Term {
         return Optional.of(newSubst);
     }
 
-    public static Optional<Subst> unify(List<Term> xs, List<Term> ys, Subst s) {
+    public static Optional<Subst> unify(Terms xs, Terms ys, Subst s) {
         if (xs.size() != ys.size()) return Optional.empty();
         var newSubst = s;
         for (int i = 0; i < xs.size(); i++) {

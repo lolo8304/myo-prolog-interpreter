@@ -14,7 +14,7 @@ public class LogicalExpressionNode extends ConditionNode {
     }
 
     public Terms asTerms() {
-        return new Terms(this.asConstr().get().terms);
+        return new TermsList(this.asConstr().orElseThrow().terms);
     }
 
 }

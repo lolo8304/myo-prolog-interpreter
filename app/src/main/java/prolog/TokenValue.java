@@ -62,12 +62,16 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public Term map(Subst s) {
-        var b = s.lookup(this.toValueString());
-        if (b.isPresent()) {
-            if (this.equals(b.get())) {
-                return this;
+        if (this.is(Token.VARIABLE)) {
+            var b = s.lookup(this.toValueString());
+            if (b.isPresent()) {
+                if (this.equals(b.get())) {
+                    return this;
+                } else {
+                    return b.get().map(s);
+                }
             } else {
-                return b.get().map(s);
+                return this;
             }
         } else {
             return this;
@@ -150,7 +154,7 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public StringBuilder append(StringBuilder builder) {
-        builder.append("[").append(this.token).append("=").append(this.toValueString()).append("]");
+        builder.append("").append(this.token).append("=").append(this.toValueString()).append("");
         return builder;
     }
 
