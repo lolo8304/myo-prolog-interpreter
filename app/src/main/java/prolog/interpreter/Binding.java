@@ -15,4 +15,9 @@ public class Binding {
         this.name = tokenValue.toValueString();
         this.term = term;
     }
+
+    @Override
+    public String toString() {
+        return "{%s = %s}".formatted(this.name, this.term.toString());
+    }
 }

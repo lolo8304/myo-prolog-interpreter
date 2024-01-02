@@ -97,8 +97,8 @@ public class ExpressionNode extends AbstractNode implements Term {
         return this.argument != null ? argument.asVar() : this.conditionNode != null ? this.conditionNode.asVar() : this.expression.asVar();
     }
 
-    public List<Term> rhs() {
-        return this.argument != null ? List.of(this.argument) : this.conditionNode != null ? this.conditionNode.rhs() : this.expression.rhs();
+    public Term rhs() {
+        return this.argument != null ? new TermsList(this.argument) : this.conditionNode != null ? this.conditionNode.rhs() : this.expression.rhs();
     }
 
 

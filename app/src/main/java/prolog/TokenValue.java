@@ -100,7 +100,7 @@ public class TokenValue implements Term, TermStatus {
                     return Optional.of(new Subst(new Binding(yAsVar.get().name(), this), s));
                 }
             } else {
-                // this not var, y not var = both constantsm, check if the same
+                // this not var, y not var = both constants, check if the same
                 return y.asConstr().flatMap(yAsConstr ->
                     this.toValueString().equals(yAsConstr.atom.toValueString()) ? Optional.of(s) : Optional.empty());
             }
@@ -145,7 +145,12 @@ public class TokenValue implements Term, TermStatus {
     public Term asTerm() {
         var asVar = this.asVar();
         if (asVar.isPresent()) return asVar.get();
-        return asConstr().get();
+        return asConstr().orElseThrow();
+    }
+
+    @Override
+    public Terms concat(Term term) {
+        return new TermsList(this.asTerm(), term);
     }
 
     public Binding asBinding() {
@@ -154,7 +159,8 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public StringBuilder append(StringBuilder builder) {
-        builder.append("").append(this.token).append("=").append(this.toValueString()).append("");
+//        builder.append(this.token).append("=").append(this.toValueString());
+        builder.append(this.toValueString());
         return builder;
     }
 

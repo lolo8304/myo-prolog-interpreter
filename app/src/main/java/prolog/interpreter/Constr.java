@@ -90,6 +90,11 @@ public class Constr implements  Term {
         return this.asConstr().get();
     }
 
+    @Override
+    public Terms concat(Term term) {
+        return new TermsList(this, term);
+    }
+
 
     public static Optional<Subst> pmatch(List<Term> patterns, List<Term> terms, Subst s) {
         if (patterns.size() != terms.size()) return Optional.empty();
@@ -116,6 +121,8 @@ public class Constr implements  Term {
             }
             if (optionalS.isPresent()) {
                 newSubst = optionalS.get();
+            } else {
+                return Optional.empty();
             }
         }
         return Optional.of(newSubst);
@@ -151,7 +158,7 @@ public class Constr implements  Term {
         return this.terms.lhs();
     }
 
-    public Terms rhs() {
+    public Term rhs() {
         return this.terms.rhs();
     }
 }

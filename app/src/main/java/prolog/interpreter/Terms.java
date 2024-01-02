@@ -13,13 +13,11 @@ public interface Terms extends Term, Node, List<Term> {
     boolean addAll(Collection<? extends Term> c);
 
     Term lhs();
-    Terms rhs();
+    Term rhs();
 
     Terms newInstance();
 
     Terms map(Subst s);
-
-    Terms concat(Terms terms);
 
     Optional<Subst> unify(Terms ys, Subst s);
 

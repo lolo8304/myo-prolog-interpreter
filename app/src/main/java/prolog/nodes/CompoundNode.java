@@ -103,13 +103,25 @@ public abstract class CompoundNode extends AbstractNode implements Term {
                     this.arguments().get(0),
                     NIL_ARGUMENT);
         } else {
-            var args = this.arguments();
-            ArgumentNode lastTail = NIL_ARGUMENT;
-            for (int i = args.size()-1; i > 0; i--) {
-                lastTail = new ArgumentNode(new CompoundListNode(args.get(i), lastTail));
-            }
-            return lastTail.compoundTerm;
+            return asListNotation(this.arguments());
         }
+    }
+
+    public static CompoundListNode asListNotation(List<ArgumentNode> argumentNodes) {
+        if (argumentNodes.isEmpty()) {
+            throw new RuntimeException("List notation conversation cannot be empty");
+        }
+        var startIndex = argumentNodes.size()-1;
+        ArgumentNode lastTail = argumentNodes.get(startIndex);
+        if (lastTail.equals(NIL_ARGUMENT)) {
+            startIndex--;
+        } else {
+            lastTail = NIL_ARGUMENT;
+        }
+        for (int i = startIndex; i >= 0; i--) {
+            lastTail = new ArgumentNode(new CompoundListNode(argumentNodes.get(i), lastTail));
+        }
+        return (CompoundListNode)lastTail.compoundTerm;
     }
 
     @Override

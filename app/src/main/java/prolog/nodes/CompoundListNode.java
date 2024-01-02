@@ -45,9 +45,20 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
             }
             builder.append('"');
             return builder;
+        } else if (this.hasTailWithVariable()) {
+            builder.append("[");
+            this.head.append(builder);
+            builder.append("|");
+            this.tail.append(builder);
+            builder.append("]");
+            return builder;
         } else {
             return super.append(builder);
         }
+    }
+
+    private boolean hasTailWithVariable() {
+        return this.tail.asVar().isPresent();
     }
 
     @Override
@@ -93,6 +104,16 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
 
     @Override
     public Terms asTerms() {
-        return new TermsList(this.arguments().stream().map(ArgumentNode::asTerm).toList());
+        var termTail = this.tail.asTerm();
+        if (termTail instanceof Var tailAsVar) {
+            return new TermsList(this.head, new TermsVar(tailAsVar));
+        } else {
+            return new TermsList(this.head, termTail);
+        }
+    }
+
+    @Override
+    public PredicateNode asPredicate() {
+        return new PredicateNode(this.functor, this.arguments());
     }
 }

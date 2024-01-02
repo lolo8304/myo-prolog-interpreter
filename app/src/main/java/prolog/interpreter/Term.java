@@ -23,4 +23,5 @@ public interface Term {
 
     Term asTerm();
 
+    Terms concat(Term term);
 }

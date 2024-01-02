@@ -1,17 +1,13 @@
 package prolog.interpreter;
 
-import prolog.nodes.AbstractNode;
-import prolog.nodes.Node;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Optional;
 
 public class TermsList extends ArrayList<Term> implements Terms {
     public final static TermsList EMPTY_TERMS = new TermsList();
     private final FreeVars freevars = new FreeVars();
-
-    public TermsList(int initialCapacity) {
-        super(initialCapacity);
-    }
 
     public TermsList() {
     }
@@ -19,7 +15,7 @@ public class TermsList extends ArrayList<Term> implements Terms {
         super();
         this.addAll(Arrays.stream(terms).toList());
     }
-    public TermsList(Term head, TermsList tail) {
+    public TermsList(Term head, Terms tail) {
         super();
         this.add(head);
         this.addAll(tail);
@@ -28,10 +24,6 @@ public class TermsList extends ArrayList<Term> implements Terms {
     public TermsList(Collection<? extends Term> c) {
         super();
         this.addAll(c);
-    }
-
-    public TermsList(List<AbstractNode> nodes) {
-        super(nodes.stream().map(AbstractNode::asTerm).toList());
     }
 
     @Override
@@ -61,7 +53,7 @@ public class TermsList extends ArrayList<Term> implements Terms {
     public Term lhs() {
         return this.get(0);
     }
-    public TermsList rhs() {
+    public Term rhs() {
         return new TermsList(this.subList(1,this.size()));
     }
 
@@ -84,7 +76,18 @@ public class TermsList extends ArrayList<Term> implements Terms {
     public Terms newInstance() {
         var s = this.freevars().asSubs();
         var mappedHead = this.lhs().map(s);
-        var mappedTail = new TermsList(this.rhs().stream().map(x -> x.map(s)).toList());
+        var rhs = this.rhs();
+        Terms mappedTail;
+        if (rhs instanceof Terms rhsAsTerms) {
+            mappedTail = new TermsList(rhsAsTerms.stream().map(x -> x.map(s)).toList());
+        } else {
+            var mappedRhs = rhs.map(s);
+            if (mappedRhs instanceof Terms mappedRhsAsTerms) {
+                mappedTail = mappedRhsAsTerms;
+            } else {
+                throw new RuntimeException("rhs is not a list - dont know what to do");
+            }
+        }
         return new TermsList(mappedHead, mappedTail);
     }
 
@@ -114,9 +117,13 @@ public class TermsList extends ArrayList<Term> implements Terms {
         return null;
     }
 
-    public TermsList concat(Terms terms) {
+    public Terms concat(Term term) {
         var concatTerms = new TermsList(this);
-        concatTerms.addAll(terms);
+        if (term instanceof Terms termAsTerms) {
+            concatTerms.addAll(termAsTerms);
+        } else {
+            concatTerms.add(term);
+        }
         return concatTerms;
     }
 

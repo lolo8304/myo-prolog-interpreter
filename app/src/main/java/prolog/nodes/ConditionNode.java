@@ -59,7 +59,7 @@ public class ConditionNode extends AbstractNode implements Term {
         return Optional.empty();
     }
 
-    public List<Term> rhs() {
+    public Term rhs() {
         return this.asConstr().get().terms;
     }
 

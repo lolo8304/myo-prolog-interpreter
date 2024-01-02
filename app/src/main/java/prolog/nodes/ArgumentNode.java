@@ -161,7 +161,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
 
     @Override
     public Term asTerm() {
-        if (this.compoundTerm != null) return this.compoundTerm.asConstr().get();
+        if (this.compoundTerm != null) return this.compoundTerm.asConstr().orElseThrow();
         if (this.atom != null) return this.atom;
         if (this.variable != null) return new Var(this.variable);
         return this.number;

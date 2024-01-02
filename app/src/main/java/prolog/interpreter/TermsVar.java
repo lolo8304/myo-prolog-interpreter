@@ -12,12 +12,12 @@ public class TermsVar extends TermsList {
     private TokenValue variable;
 
     public TermsVar(TokenValue variable) {
-        super();
+        super(variable);
         this.variable = variable;
         this.freevars().add(this.variable);
     }
     public TermsVar(Var variable) {
-        super();
+        super(variable);
         this.variable = variable.atom;
         this.freevars().add(this.variable);
     }
@@ -28,7 +28,7 @@ public class TermsVar extends TermsList {
     }
 
     @Override
-    public TermsList rhs() {
+    public Term rhs() {
         throw new RuntimeException("Var as list has no lhs");
     }
 
@@ -61,7 +61,7 @@ public class TermsVar extends TermsList {
     }
 
     @Override
-    public TermsList concat(Terms terms) {
+    public TermsList concat(Term terms) {
         throw new RuntimeException("concat not allowed for var as list");
     }
 

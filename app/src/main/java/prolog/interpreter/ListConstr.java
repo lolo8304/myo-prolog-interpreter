@@ -23,17 +23,31 @@ public class ListConstr extends Constr {
 
     @Override
     public Term lhs() {
-        return this.terms.get(0);
+        return this.terms.get(0).asTerm();
     }
 
     @Override
-    public Terms rhs() {
+    public Term rhs() {
         var tail = this.terms.get(1);
         if (tail instanceof Terms tailAsTerms) {
             return tailAsTerms;
+        } else if (tail.equals(TokenValue.NIL)) {
+            return tail;
+        } else if (tail instanceof ListConstr tailAsListConstr) {
+            return tailAsListConstr;
+        } else if (tail instanceof Var tailAsVar) {
+            return new TermsVar(tailAsVar);
+        } else if (tail instanceof TokenValue tailAsTokenValue && tailAsTokenValue.is(Token.VARIABLE)) {
+            return new TermsVar(tailAsTokenValue);
         } else {
-            return new TermsList(tail);
+            throw new RuntimeException("Lists should have always a list in rhs");
+            //return new TermsList(tail);
         }
+    }
+
+    @Override
+    public Terms concat(Term term) {
+        return new TermsList(this, term);
     }
 
     @Override
@@ -67,11 +81,11 @@ public class ListConstr extends Constr {
                  */
                 var headX = this.lhs();
                 var headY = yAsListConstr.lhs();
-                var newS = headX.unify(headY,s);
+                var newS = headX.unify(headY, s);
                 if (newS.isPresent()) {
                     var tailX = this.rhs();
                     var tailY = yAsListConstr.rhs();
-                    return tailX.unify(tailY,s);
+                    return tailX.unify(tailY, newS.get());
                 } else {
                     return Optional.empty();
                 }
@@ -93,7 +107,7 @@ public class ListConstr extends Constr {
             builder.append("[]");
             return builder;
         }
-        builder.append(this.atom.toValueString());
+        //builder.append(this.atom.toValueString());
         if (this.terms.size() == 0) return builder;
 
         builder.append("[");

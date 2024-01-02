@@ -49,4 +49,7 @@ public abstract class AbstractNode implements Node, TermStatus {
         return new TermsList(this.asTerm());
     }
 
+    public Terms concat(Term term) {
+        return new TermsList(this.asTerm(), term);
+    }
 }

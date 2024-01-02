@@ -21,6 +21,10 @@ public class Subst extends ArrayList<Binding> {
         this(s);
         this.add(0, binding);
     }
+    public Subst(Binding binding) {
+        this(new Subst());
+        this.add(0, binding);
+    }
 
     public Optional<Term> lookup(String name) {
         for (var binding : this) {

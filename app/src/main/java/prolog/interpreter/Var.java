@@ -80,6 +80,11 @@ public class Var implements Term {
     }
 
     @Override
+    public Terms concat(Term term) {
+        return new TermsList(this.asTerm(), term);
+    }
+
+    @Override
     public StringBuilder append(StringBuilder builder) {
         builder.append(this.atom);
         if (this.freevars.contains(this.atom)) {
