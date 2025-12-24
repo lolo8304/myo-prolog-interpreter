@@ -98,7 +98,8 @@ public class ListConstr extends Constr {
 
     @Override
     public Term map(Subst s) {
-        return new ListConstr(this.atom, this.terms.stream().map( x -> x.map(s)).toList());
+        var mappedTerms = this.terms.stream().map( x -> x.map(s)).toList();
+        return new ListConstr(this.atom, mappedTerms);
     }
 
     @Override

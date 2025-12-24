@@ -289,7 +289,11 @@ public class Parser {
                 if (!close.is(Token.CLOSE_LIST)) {
                     throw new IOException("Illegal token found instead of ] for list notation node '"+close+"'");
                 }
-                for (int i = list.size()-1; i >= 0; i--) {
+                var startIndex = list.size()-1;
+                if (list.get(startIndex) == NIL_ARGUMENT) {
+                    startIndex--;
+                }
+                for (int i = startIndex; i >= 0; i--) {
                     lastTail = new ArgumentNode(new CompoundListNode(list.get(i), lastTail));
                 }
                 return lastTail.compoundTerm;

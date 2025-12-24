@@ -22,7 +22,7 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
     }
 
     public CompoundListNode(ArgumentNode head, ArgumentNode tail) {
-        super(new TokenValue(Token.QUOTED_ATOM, "."));
+        super(new TokenValue(Token.ATOM, "."));
         this.head = head;
         this.tail = tail;
     }

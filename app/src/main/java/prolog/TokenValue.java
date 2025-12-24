@@ -28,7 +28,11 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public String toString() {
-        return this.append(new StringBuilder()).toString();
+        var str = this.append(new StringBuilder()).toString();
+        if (token == Token.QUOTED_ATOM) {
+            return "'" + str.replace("'", "\\'") + "'";
+        }
+        return str;
     }
     public String toValueString() {
         return this.string;

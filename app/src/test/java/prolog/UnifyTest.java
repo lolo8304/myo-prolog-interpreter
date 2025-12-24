@@ -1,21 +1,18 @@
+package prolog;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import prolog.Prolog;
-import prolog.Token;
-import prolog.TokenValue;
 import prolog.interpreter.Binding;
-import prolog.interpreter.PrologRuntime;
 import prolog.interpreter.Subst;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UnifyTest extends Tester {
     @AfterEach
-    void CloseReader() throws IOException {
+    protected void CloseReader() throws IOException {
         super.CloseReader();
     }
 

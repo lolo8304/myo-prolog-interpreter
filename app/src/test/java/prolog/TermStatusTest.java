@@ -1,22 +1,17 @@
+package prolog;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import prolog.Lexer;
-import prolog.Parser;
-import prolog.Prolog;
-import prolog.interpreter.PrologRuntime;
-import prolog.nodes.ProgramNode;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class TermStatusTest  extends Tester {
     @AfterEach
-    void CloseReader() throws IOException {
+    protected void CloseReader() throws IOException {
         super.CloseReader();
     }
 

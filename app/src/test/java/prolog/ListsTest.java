@@ -1,18 +1,16 @@
+package prolog;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import prolog.Lexer;
-import prolog.Parser;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ListsTest  extends Tester {
     @AfterEach
-    void CloseReader() throws IOException {
+    protected void CloseReader() throws IOException {
         super.CloseReader();
     }
 
@@ -46,7 +44,7 @@ public class ListsTest  extends Tester {
         var str = list.toString();
 
         // Assert
-        assertEquals(".(a,b,c,d,[])", str);
+        assertEquals("\"abcd\"", str);
 
     }
 

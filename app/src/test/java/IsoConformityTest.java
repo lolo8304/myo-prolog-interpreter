@@ -1,14 +1,12 @@
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import prolog.Lexer;
 import prolog.Parser;
+import prolog.Tester;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,7 +14,7 @@ public class IsoConformityTest extends Tester {
 
 
     @AfterEach
-    void CloseReader() throws IOException {
+    protected void CloseReader() throws IOException {
         super.CloseReader();
     }
 
@@ -38,7 +36,7 @@ public class IsoConformityTest extends Tester {
             System.out.println("Parse: " + adaptedQuery);
             var program = parser.parse();
             if (this.shouldBeError(codex)) {
-                fail("Error should occur on " + query + " but was parsed");
+                fail(no+": Error should occur on " + query + " but was parsed");
             }
 
             //Action

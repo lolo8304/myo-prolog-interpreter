@@ -1,20 +1,19 @@
+package prolog;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import prolog.*;
 import prolog.interpreter.FreeVars;
 import prolog.interpreter.PrologRuntime;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PrologRuntimeTest  extends Tester {
     @AfterEach
-    void CloseReader() throws IOException {
+    protected void CloseReader() throws IOException {
         super.CloseReader();
     }
 
