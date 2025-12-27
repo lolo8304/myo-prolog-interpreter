@@ -7,20 +7,19 @@
  */
 apply plugin: "application"
 
-mainClassName = "prolog.Prolog"
-
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
 
 dependencies {
-    
+
     implementation 'info.picocli:picocli:4.7.1'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.1'
 
     // Use JUnit Jupiter for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.7.2'
 
     // This dependency is used by the application.
 }
@@ -33,4 +32,8 @@ tasks.named('test') {
 
 compileJava {
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+application {
+    mainClass = 'prolog.Prolog'
 }
