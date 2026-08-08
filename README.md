@@ -17,6 +17,11 @@ learning material, depth, and attention to detail. The
 accompanying videos are especially useful for working through Prolog step by
 step.
 
+## Related Prolog Systems
+
+- [Scryer Prolog](https://www.scryer.pl/) is a modern ISO Prolog system and a
+  useful reference implementation for comparing behavior while learning.
+
 ## Prerequisites
 
 - Java JDK 17 or newer
