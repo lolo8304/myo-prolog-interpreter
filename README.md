@@ -98,6 +98,19 @@ or:
 ./prolog.sh --no-load
 ```
 
+Use in-memory REPL history only, without loading or storing
+`$HOME/.prolog_history`:
+
+```sh
+./gradlew -q run --args='--no-history'
+```
+
+or:
+
+```sh
+./prolog.sh --no-history
+```
+
 Show help:
 
 ```sh
@@ -144,9 +157,13 @@ parent(toni, X).
 
 Interactive behavior:
 
-- Cursor up recalls the previous command from the in-memory history.
-- Cursor down moves forward through the in-memory history.
+- Cursor up recalls previous commands from REPL history.
+- Cursor down moves forward through REPL history.
 - Editing and history are powered by JLine in an interactive terminal.
+- Interactive history is loaded from and stored in `$HOME/.prolog_history`
+  unless the REPL is started with `--no-history`.
+- With `--no-history`, cursor up/down still uses in-memory history for the
+  current REPL session.
 - Piped input falls back to line-based `Scanner` input and does not provide
   cursor-key editing.
 - After a solution, press space or `;` to request the next solution. In an
@@ -159,6 +176,26 @@ Interactive behavior:
 - Failed queries print `false.`
 - Ground successful queries print `true.`
 - Variable bindings print on one line, for example `X = a, Y = b`.
+
+Use `consult(user).` to enter facts and rules directly into the running REPL.
+The prompt changes to `|: ` while user consult mode is active. Press `Ctrl-D`
+to stop entering clauses and return to query mode:
+
+```prolog
+?- consult(user).
+|: parent(toni,lolo).
+|: parent(lolo,yannick).
+|: grandparent(X,Y) :- parent(X,Z), parent(Z,Y).
+```
+
+Use `reconsult(user).` when entered facts or rules should replace existing
+clauses for the same predicate indicators:
+
+```prolog
+?- reconsult(user).
+|: parent(alice,bob).
+|: parent(bob,carol).
+```
 
 Example interactive continuation:
 

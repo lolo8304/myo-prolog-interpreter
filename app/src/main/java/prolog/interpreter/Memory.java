@@ -93,6 +93,12 @@ public class Memory {
         return this;
     }
 
+    public Memory removeClauses(String predicateIndicator) {
+        this.facts.remove(predicateIndicator);
+        this.rules.remove(predicateIndicator);
+        return this;
+    }
+
     public Memory assertClause(Terms terms, boolean atStart) {
         if (atStart) {
             this.assertedClausesAtStart.add(0, terms);

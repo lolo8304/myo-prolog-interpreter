@@ -43,6 +43,9 @@ public class Prolog implements Callable<Result> {
     @Option(names = "--no-load", description = "Do not load init.pl before starting the REPL")
     boolean noLoad = false;
 
+    @Option(names = "--no-history", description = "Use in-memory REPL history only; do not load or store $HOME/.prolog_history")
+    boolean noHistory = false;
+
     @Override
     public Result call() throws IOException {
         if (this.verbose) {
@@ -54,7 +57,7 @@ public class Prolog implements Callable<Result> {
         if (this.verbose3) {
             VERBOSE_LEVEL = 3;
         }
-        new PrologCli(!this.noLoad).execute();
+        new PrologCli(!this.noLoad, !this.noHistory).execute();
         return new Result();
     }
 }
