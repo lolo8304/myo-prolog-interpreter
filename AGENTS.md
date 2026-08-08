@@ -108,3 +108,7 @@ The worktree may contain user changes. Check `git status --short` before edits
 and do not revert unrelated files. At the time this file was written, there were
 already local modifications in IDE metadata, Java sources, and `init.pl`; treat
 such changes as user-owned unless you made them in the current task.
+
+## Overall rules
+- if you new features, commands are implemented, also mention them in the existing sections of the readme.md file
+- whenever you make changes, accept that i also make changes myself and always use all changes in git. 
