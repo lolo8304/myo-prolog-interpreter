@@ -40,6 +40,9 @@ public class Prolog implements Callable<Result> {
     @Option(names = "-vvv", description = "-vvv specifies verbose level 3")
     boolean verbose3 = false;
 
+    @Option(names = "--no-load", description = "Do not load init.pl before starting the REPL")
+    boolean noLoad = false;
+
     @Override
     public Result call() throws IOException {
         if (this.verbose) {
@@ -51,7 +54,7 @@ public class Prolog implements Callable<Result> {
         if (this.verbose3) {
             VERBOSE_LEVEL = 3;
         }
-        new PrologCli().execute();
+        new PrologCli(!this.noLoad).execute();
         return new Result();
     }
 }

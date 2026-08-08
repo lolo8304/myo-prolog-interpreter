@@ -52,7 +52,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
             this.variable = null;
             this.number = token;
             this.atom = null;
-        } else if (token.is(Token.ATOM, Token.QUOTED_ATOM, Token.nil)) {
+        } else if (token.is(Token.ATOM, Token.QUOTED_ATOM, Token.nil, Token.CUT)) {
             this.variable = null;
             this.number = null;
             this.atom = token;

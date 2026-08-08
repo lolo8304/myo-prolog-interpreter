@@ -224,6 +224,8 @@ public class Parser {
             return Optional.of(new ArgumentNode(compound));
         } else if (argument.is(Token.OPEN_PARENTHESIS)) {
             return Optional.of(this.parseGroupedArgument());
+        } else if (argument.is(Token.CUT)) {
+            return Optional.of(new ArgumentNode(argument));
         } else if (argument.isCallableOperator()) {
             var lparent = this.readNextToken();
             if (lparent.is(Token.OPEN_PARENTHESIS)) {

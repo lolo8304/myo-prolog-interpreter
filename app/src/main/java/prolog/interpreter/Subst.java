@@ -59,9 +59,9 @@ public class Subst extends ArrayList<Binding> {
             if (term.isEmpty()) {
                 continue;
             }
-            if (second) builder.append("\n; ");
+            if (second) builder.append(", ");
             second = true;
-            builder.append(variableName).append("=").append(term.get().map(this));
+            builder.append(variableName).append(" = ").append(term.get().map(this));
         }
         return builder.toString();
     }

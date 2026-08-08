@@ -61,7 +61,7 @@ public class TokenValue implements Term, TermStatus {
     }
 
     public boolean isCallableOperator() {
-        return this.is(Token.ARITHMETIC_OPERATOR, Token.ARITHMETIC_UNIFY_BINARY_OPERATOR, Token.UNIFY)
+        return this.is(Token.ARITHMETIC_OPERATOR, Token.ARITHMETIC_UNIFY_BINARY_OPERATOR, Token.UNIFY, Token.UNARY_NOT_OPERATOR)
                 || this.isComparisonOperator();
     }
 

@@ -107,7 +107,7 @@ public class Lexer {
             case '+','-','*','/','m' -> {
                 return this.readArithmeticOperator(ch);
             }
-            case '<','>','=','\\','i','#' -> {
+            case '<','>','=','\\','i','#','@' -> {
                 return this.readComparisonOperator(ch);
             }
             case '.' -> {
@@ -286,6 +286,28 @@ public class Lexer {
     // \=
     private TokenValue readComparisonOperator(Character ch) throws IOException {
         switch (ch) {
+            case '@' -> {
+                readNext();
+                ch = this.peekNext();
+                if (ch == '<') {
+                    readNext();
+                    ch = this.peekNext();
+                    if (ch == '=') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "@<=");
+                    }
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "@<");
+                } else if (ch == '>') {
+                    readNext();
+                    ch = this.peekNext();
+                    if (ch == '=') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "@>=");
+                    }
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "@>");
+                }
+                throw new IOException("@ must be followed by <, <=, > or >= but received '" + ch + "'");
+            }
             case '<' -> {
                 readNext();
                 return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "<");
@@ -337,7 +359,19 @@ public class Lexer {
             case '=' -> {
                 readNext();
                 ch = this.peekNext();
-                if (ch == '\\') {
+                if (ch == '=') {
+                    readNext();
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "==");
+                } else if (ch == '.') {
+                    readNext();
+                    ch = this.peekNext();
+                    if (ch == '.') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "=..");
+                    }
+                    this.nextCharQueue.addFirst(ch);
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "=");
+                } else if (ch == '\\') {
                     readNext();
                     ch = this.peekNext();
                     if (ch == '=') {
@@ -367,6 +401,11 @@ public class Lexer {
                 ch = this.peekNext();
                 if (ch == '=') {
                     readNext();
+                    ch = this.peekNext();
+                    if (ch == '=') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "\\==");
+                    }
                     return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "\\=");
                 } else if (ch == '+') {
                         readNext();
@@ -396,6 +435,11 @@ public class Lexer {
             }
             case '-' -> {
                 readNext();
+                ch = this.peekNext();
+                if (ch == '>') {
+                    readNext();
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "->");
+                }
                 return new TokenValue(Token.ARITHMETIC_OPERATOR, "-");
             }
             case '/' -> {

@@ -1,5 +1,12 @@
 package prolog;
 
+import org.jline.reader.EndOfFileException;
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
 import prolog.interpreter.PrologRuntime;
 
 import java.io.*;
@@ -10,11 +17,39 @@ public class PrologCli {
 
     private final PrologRuntime runtime;
     private final Scanner scanner;
+    private final boolean loadInitFile;
+    private final LineReader lineReader;
+    private Terminal terminal;
 
     public PrologCli() {
+        this(true);
+    }
+
+    public PrologCli(boolean loadInitFile) {
         this.runtime = new PrologRuntime();
         this.scanner = new Scanner(System.in);
+        this.loadInitFile = loadInitFile;
+        this.lineReader = this.createLineReader();
         this.runtime.setSolutionContinuationReader(this::readSolutionContinuation);
+    }
+
+    private LineReader createLineReader() {
+        if (System.console() == null) {
+            return null;
+        }
+
+        try {
+            Terminal terminal = TerminalBuilder.builder()
+                    .system(true)
+                    .build();
+            this.terminal = terminal;
+            return LineReaderBuilder.builder()
+                    .terminal(terminal)
+                    .history(new DefaultHistory())
+                    .build();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public PrologCli consult(Reader reader) throws IOException {
@@ -43,14 +78,16 @@ public class PrologCli {
     }
 
     public void execute() throws IOException {
-        var initFile = this.findInitFile();
-        if (initFile.isPresent()) {
-            try (var r = new FileReader(initFile.get())) {
-                this.runtime.setSolutionContinuationReader(() -> '.');
-                try {
-                    this.consult(r);
-                } finally {
-                    this.runtime.setSolutionContinuationReader(this::readSolutionContinuation);
+        if (this.loadInitFile) {
+            var initFile = this.findInitFile();
+            if (initFile.isPresent()) {
+                try (var r = new FileReader(initFile.get())) {
+                    this.runtime.setSolutionContinuationReader(() -> '.');
+                    try {
+                        this.consult(r);
+                    } finally {
+                        this.runtime.setSolutionContinuationReader(this::readSolutionContinuation);
+                    }
                 }
             }
         }
@@ -79,6 +116,14 @@ public class PrologCli {
 
 
     private Optional<String> readFromConsole() throws IOException {
+        if (this.lineReader != null) {
+            try {
+                return Optional.of(this.lineReader.readLine("?- "));
+            } catch (EndOfFileException | UserInterruptException e) {
+                return Optional.empty();
+            }
+        }
+
         System.out.print("?- ");
         if (scanner.hasNextLine()) {
             return Optional.of(scanner.nextLine());
@@ -88,6 +133,23 @@ public class PrologCli {
     }
 
     private char readSolutionContinuation() {
+        if (this.terminal != null) {
+            var previousAttributes = this.terminal.enterRawMode();
+            try {
+                var input = this.terminal.reader().read();
+                if (input < 0) {
+                    return '.';
+                }
+
+                System.out.println(input == ' ' ? ";" : String.valueOf((char) input));
+                return input == ';' || input == ' ' ? ';' : '.';
+            } catch (IOException e) {
+                return '.';
+            } finally {
+                this.terminal.setAttributes(previousAttributes);
+            }
+        }
+
         if (!this.scanner.hasNextLine()) {
             return '.';
         }

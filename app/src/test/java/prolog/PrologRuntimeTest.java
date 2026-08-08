@@ -58,6 +58,23 @@ public class PrologRuntimeTest  extends Tester {
     }
 
     @Test
+    public void multiple_query_variables_are_printed_on_one_line() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("X = a, Y = b."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        assertTrue(output.toString().contains("solution: X = a, Y = b"), output.toString());
+    }
+
+    @Test
     public void list_length_recursive_rule_finds_solution() throws IOException {
         var runtime = new PrologRuntime();
         runtime.setSolutionContinuationReader(() -> '.');
@@ -76,7 +93,7 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        assertTrue(solution.contains("solution: X=1"));
+        assertTrue(solution.contains("solution: X = 1"));
         assertTrue(!solution.contains("L_"));
         assertTrue(!solution.contains("L0_"));
         assertTrue(!solution.contains("Ls_"));
@@ -103,8 +120,8 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        assertTrue(solution.contains("solution: X=1"));
-        assertTrue(!solution.contains("Y="));
+        assertTrue(solution.contains("solution: X = 1"));
+        assertTrue(!solution.contains("Y = "));
     }
 
     @Test
@@ -130,61 +147,61 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        assertTrue(solution.contains("X=ok_gt"));
-        assertTrue(solution.contains("X=ok_gte"));
-        assertTrue(solution.contains("X=ok_lt"));
-        assertTrue(solution.contains("X=ok_lte"));
-        assertTrue(solution.contains("X=ok_eq"));
-        assertTrue(solution.contains("X=ok_neq"));
+        assertTrue(solution.contains("X = ok_gt"));
+        assertTrue(solution.contains("X = ok_gte"));
+        assertTrue(solution.contains("X = ok_lt"));
+        assertTrue(solution.contains("X = ok_lte"));
+        assertTrue(solution.contains("X = ok_eq"));
+        assertTrue(solution.contains("X = ok_neq"));
     }
 
     @Test
-    public void callable_operator_forms_are_supported_for_existing_builtins() throws IOException {
+    public void callable_operator_forms_are_supported_for_existing_iso_prolog_built_ins() throws IOException {
         var runtime = new PrologRuntime();
         runtime.setSolutionContinuationReader(() -> ';');
         var program = this.parse(
-                "callable(ok_unify) :- =(a, a)." +
-                "callable(ok_not_unify) :- \\=(a, b)." +
-                "callable(ok_plain_gt) :- >(2, 1)." +
-                "callable(ok_plain_gte) :- >=(2, 2)." +
-                "callable(ok_plain_lt) :- <(1, 2)." +
-                "callable(ok_plain_lte) :- =<(2, 2)." +
-                "callable(ok_plain_eq) :- =:=(2, +(1, 1))." +
-                "callable(ok_plain_neq) :- =\\=(2, 3)." +
-                "callable(ok_gt) :- #>(2, 1)." +
-                "callable(ok_gte) :- #>=(2, 2)." +
-                "callable(ok_lt) :- #<(1, 2)." +
-                "callable(ok_lte) :- #=<(2, 2)." +
-                "callable(ok_eq) :- #=(2, +(1, 1))." +
-                "callable(ok_neq) :- #\\=(2, 3)." +
-                "callable(ok_is) :- is(X, +(1, 1)), #=(X, 2).");
+                "supported(ok_unify) :- =(a, a)." +
+                "supported(ok_not_unify) :- \\=(a, b)." +
+                "supported(ok_plain_gt) :- >(2, 1)." +
+                "supported(ok_plain_gte) :- >=(2, 2)." +
+                "supported(ok_plain_lt) :- <(1, 2)." +
+                "supported(ok_plain_lte) :- =<(2, 2)." +
+                "supported(ok_plain_eq) :- =:=(2, +(1, 1))." +
+                "supported(ok_plain_neq) :- =\\=(2, 3)." +
+                "supported(ok_gt) :- #>(2, 1)." +
+                "supported(ok_gte) :- #>=(2, 2)." +
+                "supported(ok_lt) :- #<(1, 2)." +
+                "supported(ok_lte) :- #=<(2, 2)." +
+                "supported(ok_eq) :- #=(2, +(1, 1))." +
+                "supported(ok_neq) :- #\\=(2, 3)." +
+                "supported(ok_is) :- is(X, +(1, 1)), #=(X, 2).");
         runtime.consult(program);
 
         var output = new ByteArrayOutputStream();
         var previousOut = System.out;
         try {
             System.setOut(new PrintStream(output));
-            runtime.execute(this.parse("callable(X)."));
+            runtime.execute(this.parse("supported(X)."));
         } finally {
             System.setOut(previousOut);
         }
 
         var solution = output.toString();
-        assertTrue(solution.contains("X=ok_unify"));
-        assertTrue(solution.contains("X=ok_not_unify"));
-        assertTrue(solution.contains("X=ok_plain_gt"));
-        assertTrue(solution.contains("X=ok_plain_gte"));
-        assertTrue(solution.contains("X=ok_plain_lt"));
-        assertTrue(solution.contains("X=ok_plain_lte"));
-        assertTrue(solution.contains("X=ok_plain_eq"));
-        assertTrue(solution.contains("X=ok_plain_neq"));
-        assertTrue(solution.contains("X=ok_gt"));
-        assertTrue(solution.contains("X=ok_gte"));
-        assertTrue(solution.contains("X=ok_lt"));
-        assertTrue(solution.contains("X=ok_lte"));
-        assertTrue(solution.contains("X=ok_eq"));
-        assertTrue(solution.contains("X=ok_neq"));
-        assertTrue(solution.contains("X=ok_is"));
+        assertTrue(solution.contains("X = ok_unify"), solution);
+        assertTrue(solution.contains("X = ok_not_unify"));
+        assertTrue(solution.contains("X = ok_plain_gt"));
+        assertTrue(solution.contains("X = ok_plain_gte"));
+        assertTrue(solution.contains("X = ok_plain_lt"));
+        assertTrue(solution.contains("X = ok_plain_lte"));
+        assertTrue(solution.contains("X = ok_plain_eq"));
+        assertTrue(solution.contains("X = ok_plain_neq"));
+        assertTrue(solution.contains("X = ok_gt"));
+        assertTrue(solution.contains("X = ok_gte"));
+        assertTrue(solution.contains("X = ok_lt"));
+        assertTrue(solution.contains("X = ok_lte"));
+        assertTrue(solution.contains("X = ok_eq"));
+        assertTrue(solution.contains("X = ok_neq"));
+        assertTrue(solution.contains("X = ok_is"));
     }
 
     @Test
@@ -225,7 +242,7 @@ public class PrologRuntimeTest  extends Tester {
             System.setOut(previousOut);
         }
 
-        assertTrue(output.toString().contains("solution: X=1"));
+        assertTrue(output.toString().contains("solution: X = 1"));
     }
 
     @Test
@@ -247,6 +264,227 @@ public class PrologRuntimeTest  extends Tester {
     }
 
     @Test
+    public void true_and_false_are_supported_as_iso_prolog_built_ins() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("true."));
+            runtime.execute(this.parse("false."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("true."), result);
+        assertTrue(result.contains("false."), result);
+    }
+
+    @Test
+    public void true_and_false_work_inside_compound_queries() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+        runtime.consult(this.parse("color(blue)."));
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("true, color(X)."));
+            runtime.execute(this.parse("false, color(Y)."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("X = blue"), result);
+        assertTrue(!result.contains("Y = blue"), result);
+        assertTrue(result.contains("false."), result);
+    }
+
+    @Test
+    public void write_and_nl_are_supported_as_iso_prolog_built_ins() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("write(hello), nl."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("hello" + System.lineSeparator()), result);
+        assertTrue(result.contains("true."), result);
+    }
+
+    @Test
+    public void write_outputs_bound_variables_inside_queries() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+        runtime.consult(this.parse("color(blue)."));
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("color(X), write(X), nl."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("blue" + System.lineSeparator()), result);
+        assertTrue(result.contains("X = blue"), result);
+    }
+
+    @Test
+    public void iso_term_and_type_built_ins_are_supported() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> ';');
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("==(a, a), \\==(a, b), @<(a, b), unify_with_occurs_check(X, a), atom(a), integer(1), number(1), atomic(a), compound(f(a)), callable(f(a))."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("X = a"), result);
+    }
+
+    @Test
+    public void iso_term_decomposition_built_ins_are_supported() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("functor(f(a,b), F, A), arg(2, f(a,b), B), =..(f(a,b), Parts), copy_term(f(X), Copy)."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("F = f"), result);
+        assertTrue(result.contains("A = 2"), result);
+        assertTrue(result.contains("B = b"), result);
+        assertTrue(result.replace(" ", "").contains("Parts=[f|[a|[b|[]]]]"), result);
+        assertTrue(result.contains("Copy = f("), result);
+    }
+
+    @Test
+    public void iso_all_solutions_and_atom_built_ins_are_supported() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+        runtime.consult(this.parse("color(red). color(blue)."));
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("findall(X, color(X), Xs), atom_length(hello, L), atom_chars(hi, Cs), atom_codes(hi, Codes), char_code(a, Code), number_chars(12, Ns), sub_atom(hello, 1, 3, After, Sub)."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        var compact = result.replace(" ", "");
+        assertTrue(compact.contains("Xs=[red|[blue|[]]]"), result);
+        assertTrue(result.contains("L = 5"), result);
+        assertTrue(compact.contains("Cs=[h|[i|[]]]"), result);
+        assertTrue(compact.contains("Codes=[104|[105|[]]]"), result);
+        assertTrue(result.contains("Code = 97"), result);
+        assertTrue(compact.contains("Ns=[1|[2|[]]]"), result);
+        assertTrue(result.contains("After = 1"), result);
+        assertTrue(result.contains("Sub = ell"), result);
+    }
+
+    @Test
+    public void iso_control_and_environment_built_ins_are_supported() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+        runtime.consult(this.parse("color(red). color(blue)."));
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("\\+(color(green)), once(color(X)), current_prolog_flag(unknown, Flag), set_prolog_flag(answer, yes), current_prolog_flag(answer, Answer)."));
+            runtime.execute(this.parse("op(500, xfy, custom)."));
+            runtime.execute(this.parse("current_op(P, Type, custom)."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("X = red"), result);
+        assertTrue(result.contains("Flag = fail"), result);
+        assertTrue(result.contains("Answer = yes"), result);
+        assertTrue(result.contains("P = 500"), result);
+        assertTrue(result.contains("Type = xfy"), result);
+    }
+
+    @Test
+    public void iso_listing_and_metadata_built_ins_are_supported() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> ';');
+        runtime.consult(this.parse(
+                "parent(toni,lolo)." +
+                "grandparent(X,Y) :- parent(X,Z), parent(Z,Y)."));
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("current_predicate(P)."));
+            runtime.execute(this.parse("current_op(Priority, xfx, '=')."));
+            runtime.execute(this.parse("current_char_conversion(In, Out)."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var compact = output.toString().replace(" ", "");
+        assertTrue(compact.contains("P=/(current_predicate,1)"), output.toString());
+        assertTrue(compact.contains("P=/(parent,2)"), output.toString());
+        assertTrue(compact.contains("P=/(grandparent,2)"), output.toString());
+        assertTrue(compact.contains("Priority=700"), output.toString());
+        assertTrue(output.toString().contains("false."), output.toString());
+    }
+
+    @Test
+    public void iso_metadata_predicate_indicator_can_be_queried_directly() throws IOException {
+        var runtime = new PrologRuntime();
+        runtime.setSolutionContinuationReader(() -> '.');
+        runtime.consult(this.parse("parent(toni,lolo)."));
+
+        var output = new ByteArrayOutputStream();
+        var previousOut = System.out;
+        try {
+            System.setOut(new PrintStream(output));
+            runtime.execute(this.parse("current_predicate(/(parent, 2))."));
+            runtime.execute(this.parse("current_predicate(/(missing, 1))."));
+        } finally {
+            System.setOut(previousOut);
+        }
+
+        var result = output.toString();
+        assertTrue(result.contains("true."), result);
+        assertTrue(result.contains("false."), result);
+    }
+
+    @Test
     public void dot_stops_after_first_solution() throws IOException {
         var runtime = new PrologRuntime();
         runtime.setSolutionContinuationReader(() -> '.');
@@ -263,8 +501,8 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        assertTrue(solution.contains("solution: X=blue"));
-        assertTrue(!solution.contains("X=green"));
+        assertTrue(solution.contains("solution: X = blue"));
+        assertTrue(!solution.contains("X = green"));
     }
 
     @Test
@@ -284,8 +522,8 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        assertTrue(solution.contains("solution: X=blue"));
-        assertTrue(solution.contains("solution: X=green"));
+        assertTrue(solution.contains("solution: X = blue"));
+        assertTrue(solution.contains("solution: X = green"));
     }
 
     @Test
@@ -306,9 +544,9 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        var red = solution.indexOf("X=red");
-        var blue = solution.indexOf("X=blue");
-        var green = solution.indexOf("X=green");
+        var red = solution.indexOf("X = red");
+        var blue = solution.indexOf("X = blue");
+        var green = solution.indexOf("X = green");
         assertTrue(red >= 0);
         assertTrue(blue > red);
         assertTrue(green > blue);
@@ -347,7 +585,7 @@ public class PrologRuntimeTest  extends Tester {
             System.setOut(previousOut);
         }
 
-        assertTrue(output.toString().contains("Who=lolo"));
+        assertTrue(output.toString().contains("Who = lolo"));
     }
 
     @Test
@@ -368,7 +606,7 @@ public class PrologRuntimeTest  extends Tester {
             System.setOut(previousOut);
         }
 
-        assertTrue(output.toString().contains("Who=yannick"), output.toString());
+        assertTrue(output.toString().contains("Who = yannick"), output.toString());
     }
 
     @Test
@@ -391,9 +629,9 @@ public class PrologRuntimeTest  extends Tester {
         }
 
         var solution = output.toString();
-        var first = solution.indexOf("X=a_first");
-        var statik = solution.indexOf("X=static");
-        var last = solution.indexOf("X=z_last");
+        var first = solution.indexOf("X = a_first");
+        var statik = solution.indexOf("X = static");
+        var last = solution.indexOf("X = z_last");
         assertTrue(first >= 0);
         assertTrue(statik > first);
         assertTrue(last > statik);
@@ -420,7 +658,7 @@ public class PrologRuntimeTest  extends Tester {
             Files.deleteIfExists(programFile);
         }
 
-        assertTrue(output.toString().contains("Who=lolo"));
+        assertTrue(output.toString().contains("Who = lolo"));
     }
 
     @Test
@@ -441,7 +679,7 @@ public class PrologRuntimeTest  extends Tester {
             Files.deleteIfExists(programFile);
         }
 
-        assertTrue(output.toString().contains("X=blue"), output.toString());
+        assertTrue(output.toString().contains("X = blue"), output.toString());
     }
 
 }
