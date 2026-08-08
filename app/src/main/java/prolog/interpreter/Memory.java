@@ -17,6 +17,8 @@ public class Memory {
     public final Map<String, Set<CompoundNode>> compoundTerms;
     public final Map<String, Set<FactNode>> facts;
     public final Map<String, Set<RuleNode>> rules;
+    private final List<Terms> assertedClausesAtStart;
+    private final List<Terms> assertedClausesAtEnd;
 
     public Memory(PrologRuntime runtime) {
         this.runtime = runtime;
@@ -25,6 +27,8 @@ public class Memory {
         this.compoundTerms = new LinkedHashMap<>();
         this.facts = new LinkedHashMap<>();
         this.rules = new LinkedHashMap<>();
+        this.assertedClausesAtStart = new ArrayList<>();
+        this.assertedClausesAtEnd = new ArrayList<>();
     }
 
     public Memory addAtom(TokenValue atom) throws IOException {
@@ -89,6 +93,18 @@ public class Memory {
         return this;
     }
 
+    public Memory assertClause(Terms terms, boolean atStart) {
+        if (atStart) {
+            this.assertedClausesAtStart.add(0, terms);
+        } else {
+            this.assertedClausesAtEnd.add(terms);
+        }
+        if (Prolog.verbose()) {
+            System.out.println("Memory: assert clause = " + terms);
+        }
+        return this;
+    }
+
     public Stream<Map.Entry<String, Set<FactNode>>> facts() {
         return this.facts.entrySet().stream();
     }
@@ -96,7 +112,9 @@ public class Memory {
     public Stream<Terms> clauses() {
         Stream<Terms> fs = this.facts.values().stream().flatMap(Collection::stream).map(AbstractNode::asTerms);
         Stream<Terms> rs = this.rules.values().stream().flatMap(Collection::stream).map(AbstractNode::asTerms);
-        return Stream.concat(fs, rs);
+        return Stream.concat(
+                Stream.concat(this.assertedClausesAtStart.stream(), Stream.concat(fs, rs)),
+                this.assertedClausesAtEnd.stream());
     }
 
     public Stream<Map.Entry<String, Set<RuleNode>>> rules() {

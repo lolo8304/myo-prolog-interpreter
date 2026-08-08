@@ -1,7 +1,11 @@
 package prolog.interpreter;
 
+import prolog.Token;
+import prolog.TokenValue;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class Subst extends ArrayList<Binding> {
@@ -37,12 +41,27 @@ public class Subst extends ArrayList<Binding> {
 
     @Override
     public String toString() {
+        return this.toString(this.stream().map(binding -> binding.name).toList());
+    }
+
+    public String toString(FreeVars variables) {
+        return this.toString(variables.stream()
+                .filter(token -> !token.is(Token.ANONYMOUS_VARIABLE))
+                .map(TokenValue::toValueString)
+                .toList());
+    }
+
+    private String toString(List<String> variableNames) {
         var builder = new StringBuilder();
         var second = false;
-        for (var binding: this) {
+        for (var variableName: variableNames) {
+            var term = this.lookup(variableName);
+            if (term.isEmpty()) {
+                continue;
+            }
             if (second) builder.append("\n; ");
             second = true;
-            builder.append(binding.name).append("=").append(binding.term);
+            builder.append(variableName).append("=").append(term.get().map(this));
         }
         return builder.toString();
     }

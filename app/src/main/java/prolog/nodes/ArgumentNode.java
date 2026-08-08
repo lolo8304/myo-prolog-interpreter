@@ -24,15 +24,26 @@ public class ArgumentNode extends AbstractNode implements Term  {
     public final TokenValue atom;
     public final TokenValue variable;
     public final TokenValue number;
+    public final Term term;
 
     public ArgumentNode(CompoundNode compoundTerm) {
         this.compoundTerm = compoundTerm;
         this.atom = null;
         this.variable = null;
         this.number = null;
+        this.term = null;
+    }
+
+    public ArgumentNode(Term term) {
+        this.compoundTerm = null;
+        this.atom = null;
+        this.variable = null;
+        this.number = null;
+        this.term = term;
     }
     public ArgumentNode(TokenValue token) throws IOException {
         this.compoundTerm = null;
+        this.term = null;
         if (token.is(Token.VARIABLE, Token.ANONYMOUS_VARIABLE)) {
             this.variable = token;
             this.number = null;
@@ -54,6 +65,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
         if (this.variable != null) return this.variable.toValueString();
         if (this.atom != null) return this.atom.toValueString();
         if (this.number != null) return this.number.toValueString();
+        if (this.term != null) return this.term.toString();
         return this.compoundTerm.key();
     }
 
@@ -63,6 +75,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
         if (this.variable != null) return builder.append(this.variable.toValueString());
         if (this.atom != null) return builder.append(this.atom.toValueString());
         if (this.number != null) return builder.append(this.number.toValueString());
+        if (this.term != null) return this.term.append(builder);
         return this.compoundTerm.append(builder);
     }
 
@@ -70,26 +83,31 @@ public class ArgumentNode extends AbstractNode implements Term  {
         if (this.variable != null) return this.variable;
         if (this.atom != null) return this.atom;
         if (this.number != null) return this.number;
+        if (this.term != null) return null;
         return this.compoundTerm;
     }
 
     @Override
     public boolean isGround() {
+        if (this.term != null) return this.term.freevars().isEmpty();
         return this.termStatus().isGround();
     }
 
     @Override
     public boolean isPartiallyInstantiated() {
+        if (this.term != null) return !this.term.freevars().isEmpty();
         return this.termStatus().isPartiallyInstantiated();
     }
 
     @Override
     public boolean isInstantiated() {
+        if (this.term != null) return this.term.freevars().isEmpty();
         return this.termStatus().isInstantiated();
     }
 
     @Override
     public boolean isUnInstantiated() {
+        if (this.term != null) return false;
         if (this.compoundTerm != null) return false;
         return this.termStatus().isUnInstantiated();
     }
@@ -110,6 +128,8 @@ public class ArgumentNode extends AbstractNode implements Term  {
     public FreeVars freevars() {
         if (this.variable != null) {
             return FreeVars.of(this.variable);
+        } else if (this.term != null) {
+            return this.term.freevars();
         } else if (this.compoundTerm != null) {
             return this.compoundTerm.freevars();
         } else {
@@ -121,6 +141,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
     public Term map(Subst s) {
         if (this.atom != null || this.number != null) return this;
         if (this.compoundTerm != null) return this.compoundTerm.map(s);
+        if (this.term != null) return this.term.map(s);
         return this.variable.map(s);
     }
 
@@ -129,6 +150,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
         if (this.atom != null) return this.atom.pmatch(term, s);
         if (this.number != null) return this.number.pmatch(term,s);
         if (this.compoundTerm != null) return this.compoundTerm.pmatch(term, s);
+        if (this.term != null) return this.term.pmatch(term, s);
         return this.variable.pmatch(term, s);
     }
 
@@ -137,11 +159,13 @@ public class ArgumentNode extends AbstractNode implements Term  {
         if (this.atom != null) return this.atom.unify(y, s);
         if (this.number != null) return this.number.unify(y, s);
         if (this.compoundTerm != null) return this.compoundTerm.unify(y, s);
+        if (this.term != null) return this.term.unify(y, s);
         return this.variable.unify(y, s);
     }
 
     @Override
     public Optional<Constr> asConstr() {
+        if (this.term != null) return this.term.asConstr();
         if (this.compoundTerm != null) return this.compoundTerm.asConstr();
         return Optional.empty();
     }
@@ -154,6 +178,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
 
     public PredicateNode asPredicate() {
         if (this.compoundTerm != null) return this.compoundTerm.asPredicate();
+        if (this.term != null) return this.term.asConstr().map(PredicateNode::new).orElseThrow();
         if (this.atom != null) return new PredicateNode(this.atom);
         if (this.variable != null) return new PredicateNode(this.variable);
         return new PredicateNode(this.number);
@@ -161,6 +186,7 @@ public class ArgumentNode extends AbstractNode implements Term  {
 
     @Override
     public Term asTerm() {
+        if (this.term != null) return this.term;
         if (this.compoundTerm != null) return this.compoundTerm.asConstr().orElseThrow();
         if (this.atom != null) return this.atom;
         if (this.variable != null) return new Var(this.variable);

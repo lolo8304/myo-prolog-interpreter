@@ -1,5 +1,6 @@
 package prolog.interpreter;
 
+import prolog.Token;
 import prolog.TokenValue;
 
 import java.util.*;
@@ -20,6 +21,10 @@ public class Var implements Term {
         return this.atom.toValueString();
     }
 
+    private boolean isAnonymous() {
+        return this.atom.is(Token.ANONYMOUS_VARIABLE);
+    }
+
     @Override
     public FreeVars freevars() {
         return this.freevars;
@@ -27,11 +32,17 @@ public class Var implements Term {
 
     @Override
     public Term map(Subst s) {
+        if (this.isAnonymous()) {
+            return this;
+        }
         return s.lookup(this.name()).map(value -> value.map(s)).orElse(this);
     }
 
     @Override
     public Optional<Subst> pmatch(Term term, Subst s) {
+        if (this.isAnonymous()) {
+            return Optional.of(s);
+        }
         var term1 = s.lookup(this.name());
         if (term1.isPresent()) {
             return term1.get().pmatch(term,s);
@@ -42,24 +53,33 @@ public class Var implements Term {
 
     @Override
     public Optional<Subst> unify(Term y, Subst s) {
+        if (this.isAnonymous()) {
+            return Optional.of(s);
+        }
+        var termX1 = s.lookup(this.name());
+        if (termX1.isPresent()) {
+            return termX1.get().unify(y, s);
+        }
+
         var yAsVar = y.asVar();
         if (yAsVar.isPresent()) {
-            if (this.name().equals(yAsVar.get().name())) {
+            var yVar = yAsVar.get();
+            if (yVar.isAnonymous() || this.name().equals(yVar.name())) {
                 return Optional.of(s);
-            } else {
-                return Optional.empty();
             }
+
+            var termY1 = s.lookup(yVar.name());
+            if (termY1.isPresent()) {
+                return this.unify(termY1.get(), s);
+            }
+
+            return Optional.of(new Subst(new Binding(this.name(), yVar), s));
         } else {
             // this = var, x = not
-            var termX1 = s.lookup(this.name());
-            if (termX1.isPresent()) {
-                return termX1.get().unify(y, s);
+            if (y.map(s).freevars().contains(this.atom)) {
+                return Optional.empty();
             } else {
-                if (y.map(s).freevars().contains(this.atom)) {
-                    return Optional.empty();
-                } else {
-                    return Optional.of(new Subst(new Binding(this.name(),y), s));
-                }
+                return Optional.of(new Subst(new Binding(this.name(),y), s));
             }
         }
     }

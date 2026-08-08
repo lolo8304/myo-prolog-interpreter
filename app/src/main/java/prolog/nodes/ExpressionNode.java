@@ -52,6 +52,13 @@ public class ExpressionNode extends AbstractNode implements Term {
     }
 
     @Override
+    public FreeVars freevars() {
+        if (this.argument != null) return this.argument.freevars();
+        if (this.expression != null) return this.expression.freevars();
+        return this.conditionNode.freevars();
+    }
+
+    @Override
     public boolean isGround() {
         return this.termStatus().isGround();
     }
@@ -97,8 +104,27 @@ public class ExpressionNode extends AbstractNode implements Term {
         return this.argument != null ? argument.asVar() : this.conditionNode != null ? this.conditionNode.asVar() : this.expression.asVar();
     }
 
+    @Override
+    public Term asTerm() {
+        if (this.argument != null) {
+            return this.argument.asTerm();
+        }
+        return this.asConstr().orElseThrow();
+    }
+
     public Term rhs() {
         return this.argument != null ? new TermsList(this.argument) : this.conditionNode != null ? this.conditionNode.rhs() : this.expression.rhs();
+    }
+
+    @Override
+    public Terms asTerms() {
+        if (this.argument != null) {
+            return new TermsList(this.argument.asTerm());
+        }
+        if (this.conditionNode != null) {
+            return this.conditionNode.rhs();
+        }
+        return this.expression.asTerms();
     }
 
 

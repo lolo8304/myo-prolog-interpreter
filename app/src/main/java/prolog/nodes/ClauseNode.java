@@ -18,6 +18,7 @@ public class ClauseNode extends AbstractNode {
         this.rule = null;
         this.query = null;
     }
+
     public ClauseNode(RuleNode rule) {
         this.rule = rule;
         this.fact = null;
@@ -37,14 +38,9 @@ public class ClauseNode extends AbstractNode {
         } else {
             if (this.fact != null || this.query != null) {
                 if (Prolog.verbose()) {
-                    System.out.println("execute query: "+this);
+                    System.out.println("execute query: " + this);
                 }
                 runtime.findSolution(this);
-            }
-            if (this.isGround()) {
-                if (Prolog.verbose()) {
-                    System.out.println("true");
-                }
             }
         }
     }
@@ -101,4 +97,19 @@ public class ClauseNode extends AbstractNode {
     public Terms asTerms() {
         return this.fact != null ? this.fact.asTerms() : this.rule != null ? this.rule.asTerms() : this.query.asTerms();
     }
+
+    public void consult(PrologRuntime prologRuntime) throws IOException {
+        var consultMode = this.isGround() || this.termStatus() instanceof RuleNode;
+        try {
+            if (consultMode) {
+                prologRuntime.consultingModeOn();
+            }
+            this.execute(prologRuntime);
+        } finally {
+            if (consultMode) {
+            }
+            prologRuntime.consultingModeOff();
+        }
+    }
+
 }

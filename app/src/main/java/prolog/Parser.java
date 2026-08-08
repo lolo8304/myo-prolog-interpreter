@@ -65,6 +65,11 @@ public class Parser {
     //* A clause can be a fact, a rule, or a query *)
     //clause = predicate | rule ;
     private Optional<ClauseNode> parseClause() throws IOException {
+        var queryPrefix = this.readNextToken();
+        if (!queryPrefix.is(Token.QUERY)) {
+            this.pushBackToken(queryPrefix);
+        }
+
         var exp = this.parseExpression();
         if (exp.isEmpty()) {
             return Optional.empty();
@@ -106,20 +111,7 @@ public class Parser {
         if (argument.isEmpty()) return Optional.empty();
 
         var operator = this.readNextToken();
-        if (operator.isComparisonOperator()) {
-            var listOfArguments = new ArrayList<ArgumentNode>();
-            var listOfConditions = new ArrayList<TokenValue>();
-            while (operator.isComparisonOperator()) {
-                listOfArguments.add(argument.get());
-                listOfConditions.add(operator);
-                argument = this.parseArgumentOptional();
-                operator = this.readNextToken();
-            }
-            listOfArguments.add(argument.get());
-            this.pushBackToken(operator);
-            return Optional.of(new ExpressionNode(new ConditionNode(listOfArguments, listOfConditions)));
-
-        } else if (operator.isLogicalAndArithmeticOperator()) {
+        if (operator.isLogicalAndArithmeticOperator()) {
             var listOfArguments = new ArrayList<ArgumentNode>();
             var listOfConditions = new ArrayList<TokenValue>();
             while (operator.isLogicalAndArithmeticOperator()) {
@@ -130,7 +122,10 @@ public class Parser {
             }
             listOfArguments.add(argument.get());
             this.pushBackToken(operator);
-            return Optional.of(new ExpressionNode(new LogicalExpressionNode(listOfArguments, listOfConditions)));
+            if (listOfConditions.stream().anyMatch(token -> token.is(Token.COMMA, Token.SEMICOLON))) {
+                return Optional.of(new ExpressionNode(new LogicalExpressionNode(listOfArguments, listOfConditions)));
+            }
+            return Optional.of(new ExpressionNode(new ConditionNode(listOfArguments, listOfConditions)));
         } else {
             this.pushBackToken(operator);
             return Optional.of(new ExpressionNode(argument.get()));
@@ -174,7 +169,7 @@ public class Parser {
         if (atom.token == Token.EOF) {
             throw new IOException("Compound term needs arguments starting with ( but received EOF");
         }
-        if (atom.isNotAnyOf(Token.ATOM, Token.QUOTED_ATOM)) {
+        if (atom.isNotAnyOf(Token.ATOM, Token.QUOTED_ATOM) && !atom.isCallableOperator()) {
             throw new IOException("Compound term must start with an atom but was token '"+atom+"'");
         }
         var lparent = this.readNextToken();
@@ -227,6 +222,21 @@ public class Parser {
             this.pushBackToken(argument);
             var compound = this.parseListNotation();
             return Optional.of(new ArgumentNode(compound));
+        } else if (argument.is(Token.OPEN_PARENTHESIS)) {
+            return Optional.of(this.parseGroupedArgument());
+        } else if (argument.isCallableOperator()) {
+            var lparent = this.readNextToken();
+            if (lparent.is(Token.OPEN_PARENTHESIS)) {
+                this.pushBackToken(lparent);
+                this.pushBackToken(argument);
+                return Optional.of(new ArgumentNode(this.parseCompoundTerm()));
+            }
+            this.pushBackToken(lparent);
+            if (argument.toValueString().equals("+") || argument.toValueString().equals("-")) {
+                var arg = this.parseArgument();
+                return Optional.of(new ArgumentNode(new CompoundTermNode(argument, Collections.singletonList(arg))));
+            }
+            throw new IOException("Illegal token found for argument node '"+argument+"'");
         } else if (argument.toValueString().equals("+") || argument.toValueString().equals("-")) {
             // check if next is a
             //      number or (....)
@@ -234,6 +244,33 @@ public class Parser {
             return Optional.of(new ArgumentNode(new CompoundTermNode(argument, Collections.singletonList(arg))));
         }
         throw new IOException("Illegal token found for argument node '"+argument+"'");
+    }
+
+    private ArgumentNode parseGroupedArgument() throws IOException {
+        var head = this.parseExpression();
+        if (head.isEmpty()) {
+            throw new IOException("Expression expected after (");
+        }
+
+        var next = this.readNextToken();
+        if (next.is(Token.UNIFY)) {
+            var body = this.parseExpression();
+            if (body.isEmpty()) {
+                throw new IOException("Body expected after :-");
+            }
+            var close = this.readNextToken();
+            if (!close.is(Token.CLOSE_PARENTHESIS)) {
+                throw new IOException("Grouped rule must finish with ) but token was '"+close+"'");
+            }
+            return new ArgumentNode(new prolog.interpreter.Constr(
+                    next,
+                    List.of(head.get().asTerm(), body.get().asTerm())));
+        }
+
+        if (!next.is(Token.CLOSE_PARENTHESIS)) {
+            throw new IOException("Grouped expression must finish with ) but token was '"+next+"'");
+        }
+        return new ArgumentNode(head.get().asTerm());
     }
 
     private CompoundNode parseListNotationFromString() throws IOException {

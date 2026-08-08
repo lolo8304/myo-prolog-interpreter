@@ -51,7 +51,12 @@ public class ConditionNode extends AbstractNode implements Term {
 
     @Override
     public Optional<Constr> asConstr() {
-        return Optional.of(new Constr(this.conditions.get(0), new ArrayList<>(this.terms)));
+        if (this.conditions.size() > 1 && this.conditions.get(0).isComparisonOperator()) {
+            return Optional.of(new Constr(
+                    this.conditions.get(0),
+                    List.of(this.terms.get(0).asTerm(), this.infixTerm(1, this.conditions.size()))));
+        }
+        return Optional.of(new Constr(this.conditions.get(0), this.termSlice(0, this.terms.size())));
     }
 
     @Override
@@ -59,8 +64,26 @@ public class ConditionNode extends AbstractNode implements Term {
         return Optional.empty();
     }
 
-    public Term rhs() {
-        return this.asConstr().get().terms;
+    public Terms rhs() {
+        return new TermsList(this.asConstr().get());
+    }
+
+    private Term infixTerm(int startTermIndex, int endConditionIndex) {
+        var result = this.terms.get(startTermIndex).asTerm();
+        for (int i = startTermIndex; i < endConditionIndex; i++) {
+            result = new Constr(
+                    this.conditions.get(i),
+                    List.of(result, this.terms.get(i + 1).asTerm()));
+        }
+        return result;
+    }
+
+    private List<Term> termSlice(int startInclusive, int endExclusive) {
+        var slice = new ArrayList<Term>();
+        for (int i = startInclusive; i < endExclusive; i++) {
+            slice.add(this.terms.get(i).asTerm());
+        }
+        return slice;
     }
 
     @Override
@@ -81,6 +104,11 @@ public class ConditionNode extends AbstractNode implements Term {
     @Override
     public boolean isUnInstantiated() {
         return false;
+    }
+
+    @Override
+    public FreeVars freevars() {
+        return new FreeVars(this.terms.stream().flatMap(term -> term.freevars().stream()).toList());
     }
 
     public String resetKey() {

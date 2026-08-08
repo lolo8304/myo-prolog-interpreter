@@ -26,6 +26,12 @@ public class PredicateNode extends AbstractNode implements Term {
         this._key = null;
     }
 
+    public PredicateNode(Constr constr) {
+        this.atom = constr.atom;
+        this.arguments = constr.terms.stream().map(ArgumentNode::new).toList();
+        this._key = null;
+    }
+
     public PredicateNode addArgument(ArgumentNode argument) {
         this.arguments.add(argument);
         this._key = null;

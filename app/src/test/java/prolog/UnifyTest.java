@@ -86,9 +86,12 @@ public class UnifyTest extends Tester {
 
         // Action 2
         var unify1_2 = var1.unify(var2, new Subst());
+        var subst1_2 = unify1_2.orElseThrow();
 
         // Assert
-        assertTrue(unify1_2.isEmpty());
+        assertEquals(1, subst1_2.size());
+        assertEquals("X1", subst1_2.get(0).name);
+        assertEquals("Y", subst1_2.get(0).term.asVar().orElseThrow().name());
 
     }
 

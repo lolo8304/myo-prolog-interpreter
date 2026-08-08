@@ -56,16 +56,28 @@ public class TokenValue implements Term, TermStatus {
         return this.is(Token.BINARY_COMPARISON_OPERATOR, Token.ARITHMETIC_EQUALITY_BINARY_OPERATOR, Token.ARITHMETIC_INEQUALITY_BINARY_OPERATOR);
     }
     public boolean isLogicalAndArithmeticOperator() {
-        return this.is(Token.COMMA, Token.SEMICOLON, Token.ARITHMETIC_UNIFY_BINARY_OPERATOR, Token.ARITHMETIC_OPERATOR);
+        return this.is(Token.COMMA, Token.SEMICOLON, Token.ARITHMETIC_UNIFY_BINARY_OPERATOR, Token.ARITHMETIC_OPERATOR)
+                || this.isComparisonOperator();
+    }
+
+    public boolean isCallableOperator() {
+        return this.is(Token.ARITHMETIC_OPERATOR, Token.ARITHMETIC_UNIFY_BINARY_OPERATOR, Token.UNIFY)
+                || this.isComparisonOperator();
     }
 
     @Override
     public FreeVars freevars() {
+        if (this.is(Token.ANONYMOUS_VARIABLE)) {
+            return TokenValue.EMPTY_LIST;
+        }
         return this.is(Token.VARIABLE) ? FreeVars.of(this) : TokenValue.EMPTY_LIST;
     }
 
     @Override
     public Term map(Subst s) {
+        if (this.is(Token.ANONYMOUS_VARIABLE)) {
+            return this;
+        }
         if (this.is(Token.VARIABLE)) {
             var b = s.lookup(this.toValueString());
             if (b.isPresent()) {
@@ -89,6 +101,9 @@ public class TokenValue implements Term, TermStatus {
 
     @Override
     public Optional<Subst> unify(Term y, Subst s) {
+        if (this.is(Token.ANONYMOUS_VARIABLE)) {
+            return Optional.of(s);
+        }
         var xVar = this.asVar();
         if (xVar.isPresent()) {
             return xVar.flatMap(var -> var.unify(y, s));
@@ -96,6 +111,9 @@ public class TokenValue implements Term, TermStatus {
             //this not Var, y = ?
             var yAsVar = y.asVar();
             if (yAsVar.isPresent()) {
+                if (yAsVar.get().atom.is(Token.ANONYMOUS_VARIABLE)) {
+                    return Optional.of(s);
+                }
                 // this not, y = var
                 var termY1 = s.lookup(yAsVar.get().name());
                 if (termY1.isPresent()) {
@@ -139,7 +157,7 @@ public class TokenValue implements Term, TermStatus {
     @Override
     public Optional<Var> asVar() {
         if (this.is(Token.nil)) return Optional.empty();
-        return this.is(Token.VARIABLE) ?
+        return this.is(Token.VARIABLE, Token.ANONYMOUS_VARIABLE) ?
                 Optional.of(new Var(this))
                 :
                 Optional.empty();

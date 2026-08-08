@@ -12,7 +12,7 @@
         <module name="prolog.app.main" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="20" />
+    <bytecodeTargetLevel target="25" />
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

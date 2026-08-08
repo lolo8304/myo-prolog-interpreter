@@ -33,6 +33,13 @@ public class ProgramNode extends AbstractNode {
         }
     }
 
+    public void consult(PrologRuntime prologRuntime) throws IOException {
+        for (ClauseNode x : this.clauses) {
+            x.consult(prologRuntime);
+        }
+    }
+
+
     @Override
     public StringBuilder append(StringBuilder builder) {
         for (int i = 0; i < this.clauses.size(); i++) {
@@ -71,4 +78,5 @@ public class ProgramNode extends AbstractNode {
     public Optional<Constr> asConstr() {
         return Optional.empty();
     }
+
 }

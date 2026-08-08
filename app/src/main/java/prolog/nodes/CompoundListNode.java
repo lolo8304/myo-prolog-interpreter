@@ -114,6 +114,6 @@ public class CompoundListNode extends CompoundNode implements Iterable<ArgumentN
 
     @Override
     public PredicateNode asPredicate() {
-        return new PredicateNode(this.functor, this.arguments());
+        return new PredicateNode(this.functor, List.of(this.head, this.tail));
     }
 }

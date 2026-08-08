@@ -107,7 +107,7 @@ public class Lexer {
             case '+','-','*','/','m' -> {
                 return this.readArithmeticOperator(ch);
             }
-            case '<','>','=','\\','i' -> {
+            case '<','>','=','\\','i','#' -> {
                 return this.readComparisonOperator(ch);
             }
             case '.' -> {
@@ -290,6 +290,40 @@ public class Lexer {
                 readNext();
                 return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "<");
             }
+            case '#' -> {
+                readNext();
+                ch = this.peekNext();
+                if (ch == '<') {
+                    readNext();
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "#<");
+                } else if (ch == '>') {
+                    readNext();
+                    ch = this.peekNext();
+                    if (ch == '=') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "#>=");
+                    }
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "#>");
+                } else if (ch == '=') {
+                    readNext();
+                    ch = this.peekNext();
+                    if (ch == '<') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "#=<");
+                    }
+                    return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "#=");
+                } else if (ch == '\\') {
+                    readNext();
+                    ch = this.peekNext();
+                    if (ch == '=') {
+                        readNext();
+                        return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "#\\=");
+                    }
+                    throw new IOException("#\\ must be followed by = for NOT EQUAL '" + ch + "'");
+                } else {
+                    throw new IOException("# must be followed by <, >, = or \\ but received '" + ch + "'");
+                }
+            }
             case '>' -> {
                 readNext();
                 ch = this.peekNext();
@@ -322,6 +356,7 @@ public class Lexer {
                             throw new IOException("=: must be followed by = for EQUAL '"+ch+"'");
                         }
                 } else if (ch == '<') {
+                    readNext();
                     return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "=<");
                 } else {
                     return new TokenValue(Token.BINARY_COMPARISON_OPERATOR, "=");

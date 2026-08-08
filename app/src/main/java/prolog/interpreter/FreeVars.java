@@ -1,11 +1,14 @@
 package prolog.interpreter;
 
+import prolog.Token;
 import prolog.TokenValue;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class FreeVars extends ArrayList<TokenValue> {
 
+    private static final AtomicLong NEXT_VAR_ID = new AtomicLong();
 
     public FreeVars(int initialCapacity) {
         super(initialCapacity);
@@ -40,7 +43,12 @@ public class FreeVars extends ArrayList<TokenValue> {
     }
 
     public Subst asSubs() {
-        return new Subst(this.stream().map(TokenValue::asBinding).toList());
+        return new Subst(this.stream()
+                .filter(token -> !token.is(Token.ANONYMOUS_VARIABLE))
+                .map(token -> new Binding(
+                        token,
+                        new Var(new TokenValue(Token.VARIABLE, token.toValueString() + "_" + NEXT_VAR_ID.incrementAndGet()))))
+                .toList());
     }
 
     public FreeVars concat(FreeVars freeVars) {
